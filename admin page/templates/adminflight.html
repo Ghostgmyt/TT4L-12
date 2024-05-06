@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editable Table</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f2f2f2;
+        }
+        .status-red {
+            background-color: #ffcccc;
+        }
+        .status-yellow {
+            background-color: #ffffcc;
+        }
+        .status-green {
+            background-color: #ccffcc;
+        }
+    </style>
+</head>
+<body>
+    <table id="table">
+        <tr>
+            <th>Flight Number</th>
+            <th>Departure Time</th>
+            <th>Departure Status</th>
+            <th>Status</th> <
+        </tr>
+        {% for row in table_data %}
+        <tr>
+            {% for item in row %}
+            <td>{{ item }}</td>
+            {% endfor %}
+            <td class="status status-red"></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <button id="edit-btn">Edit</button>
+    <button id="update-btn">Update</button>
+    <button id="add-btn">Add</button>
+    <button id="remove-btn">Remove</button>
+
+    <script>
+        function updateStatusColor(statusCell, status) {
+            statusCell.classList.remove('status-red', 'status-yellow', 'status-green');
+
+            if (status === 'Red') {
+                statusCell.classList.add('status-red');
+            } else if (status === 'Yellow') {
+                statusCell.classList.add('status-yellow');
+            } else if (status === 'Green') {
+                statusCell.classList.add('status-green');
+            }
+        }
+
+        document.getElementById("edit-btn").addEventListener("click", function() {
+            var rows = document.querySelectorAll("#editable-table tr");
+            rows.forEach(function(row) {
+                var cells = row.querySelectorAll("td");
+                cells.forEach(function(cell) {
+                    var input = document.createElement("input");
+                    input.value = cell.textContent;
+                    cell.innerHTML = "";
+                    cell.appendChild(input);
+                });
+            });
+        });
+
+        document.getElementById("update-btn").addEventListener("click", function() {
+            var rows = document.querySelectorAll("#editable-table tr");
+            var updatedData = [];
+            rows.forEach(function(row) {
+                var rowData = [];
+                var cells = row.querySelectorAll("td");
+                cells.forEach(function(cell) {
+                    if (cell.classList.contains('status')) {
+                        rowData.push(cell.textContent); 
+                    } else {
+                        rowData.push(cell.querySelector('input').value); 
+                    }
+                });
+                updatedData.push(rowData);
+            });
+
+            fetch('/update', {
+                method: 'POST',
+                body: JSON.stringify(updatedData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log(data);
+                rows.forEach(function(row, rowIndex) {
+                    var statusCell = row.querySelector(".status");
+                    var status = updatedData[rowIndex][3]; 
+                    updateStatusColor(statusCell, status);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById("add-btn").addEventListener("click", function() {
+            var newRow = "<tr>";
+            var columns = document.querySelectorAll("#editable-table th").length;
+            for (var i = 0; i < columns; i++) {
+                newRow += "<td></td>";
+            }
+            newRow += '<td class="status status-red"></td>';
+            newRow += "</tr>";
+            document.getElementById("editable-table").insertAdjacentHTML('beforeend', newRow);
+        });
+
+        document.getElementById("remove-btn").addEventListener("click", function() {
+            var table = document.getElementById("editable-table");
+            var rowCount = table.rows.length;
+            if (rowCount > 1) {
+                table.deleteRow(rowCount - 1);
+            }
+        });
+    </script>
+</body>
+</html>
