@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome | ATC Simulator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div class="menu">
+        <h1>Air Traffic Control Communication Simulator</h1>
+        <ul>
+            <li><a href="{{ url_for('show_category', category='flight_departure') }}">Flight Departure Communications</a></li>
+            <li><a href="{{ url_for('show_category', category='flight_landing') }}">Flight Landing Communications</a></li>
+            <li><a href="{{ url_for('show_category', category='emergencies') }}">Emergencies</a></li>
+            <li><a href="{{ url_for('show_category', category='miscellaneous') }}">Miscellaneous</a></li>
+        </ul>
+    </div>
+</body>
