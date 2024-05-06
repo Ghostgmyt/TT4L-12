@@ -1,45 +1,72 @@
-from flask import Flask , render_template , url_for
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
+from flask import Flask, render_template
 
-system = Flask(__name__)
-system.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-system.config['SECRET_KEY'] = 'TT4L_12'
-db = SQLAlchemy(system)
+app = Flask(__name__)
 
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+# Extended communications breakdown by phase
+communications = {
+    'flight_departure': {
+        'pushback': [
+            {"role": "Pilot", "message": "Ground, AirAsia 123 at gate B7, ready for pushback."},
+            {"role": "ATC", "message": "AirAsia 123, pushback approved."},
+        ],
+        'taxi': [
+            {"role": "Pilot", "message": "AirAsia 123 ready to taxi."},
+            {"role": "ATC", "message": "AirAsia 123, taxi to runway 32R, via taxiway Alpha, Bravo."},
+        ],
+        'takeoff': [
+            {"role": "Pilot", "message": "Tower, AirAsia 123 at runway 32R, ready for departure."},
+            {"role": "ATC", "message": "AirAsia 123, winds 320 at 10, runway 32R, cleared for takeoff."},
+        ]
+    },
+    'flight_landing': {
+        'approach': [
+            {"role": "Pilot", "message": "Approach, AirAsia 123, descending through 10,000 feet."},
+            {"role": "ATC", "message": "AirAsia 123, descend to 3,000 feet for runway 32R."},
+        ],
+        'landing': [
+            {"role": "Pilot", "message": "Tower, AirAsia 123, ready for landing."},
+            {"role": "ATC", "message": "AirAsia 123, cleared to land runway 32R."},
+        ],
+        'taxi_to_gate': [
+            {"role": "Pilot", "message": "Tower, AirAsia 123, clear of the runway."},
+            {"role": "ATC", "message": "AirAsia 123, taxi to gate B7."},
+        ]
+    },
+    'emergencies': {
+        'mayday': [
+            {"role": "Pilot", "message": "Mayday, Mayday, Mayday, AirAsia AK123, engine failure."},
+            {"role": "ATC", "message": "AirAsia AK123, roger your Mayday. What is your request?"},
+        ],
+        'emergency_landing': [
+            {"role": "Pilot", "message": "Request immediate return to Kuala Lumpur."},
+            {"role": "ATC", "message": "Cleared direct to runway 32R, descend to 10,000 feet."},
+        ]
+    },
+    'miscellaneous': {
+        'traffic_advisories': [
+            {"role": "ATC", "message": "Traffic at your 3 o'clock."},
+            {"role": "Pilot", "message": "Looking for traffic."},
+        ],
+        'weather_updates': [
+            {"role": "ATC", "message": "Weather alert, turn 270."},
+            {"role": "Pilot", "message": "Turning 270."},
+        ]
+    }
+}
 
-@system.route('/')
-def home():
-    return render_template('home.html')
+@app.route("/")
+def index():
+    return render_template('index.html')
 
-@system.route('/login')
-def login():
-    return render_template('login.html')
+@app.route("/communications/<category>")
+def show_category(category):
+    subcategories = communications.get(category, {})
+    return render_template('category.html', category=category, subcategories=subcategories)
 
-@system.route('/register')
-def register():
-    return render_template('register.html')
-
-@system.route('/admin')
-def admin():
-    return render_template('admin.html')
-
-@system.route('/flight_tracker')
-def flight_tracker():
-    return render_template('flight_tracker.html')
-
-@system.route('/about')
-def about():
-    return render_template('about.html')
-
-
+@app.route("/communications/<category>/<subcategory>")
+def show_subcategory(category, subcategory):
+    messages = communications.get(category, {}).get(subcategory, [])
+    return render_template('subcategory.html', category=category, subcategory=subcategory, messages=messages)
 
 if __name__ == '__main__':
-    system.run(debug=True)
-    
-
-
+    app.run(debug=True)
