@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Webpage Design</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
@@ -35,6 +36,7 @@
         })(document);
     </script>
 </head>
+
 <body>
 
     <div class="main">
@@ -42,17 +44,15 @@
             <div class="icon">
                 <h2 class="logo">GAC</h2>
             </div>
-
-            <div class="menu">
-                <ul>
-                    <li><a href="/">HOME</a></li>
-                    <li><a href="/about">ABOUT</a></li>
-                    <li><a href="/flight_tracker">FLIGHT TRACKER</a></li>
-                    <li><a href="/admin">ADMIN</a></li>
-                    <li><a href="/contact">CONTACT</a></li>
-                </ul>
-            </div>
-
+<div class="menu">
+    <ul>
+        <li><a href="{{ url_for('home') }}">HOME</a></li>
+        <li><a href="{{ url_for('about') }}">ABOUT</a></li>
+        <li><a href="{{ url_for('flight_tracker') }}">FLIGHT TRACKER</a></li>
+        <li><a href="{{ url_for('admin') }}">ADMIN</a></li>
+        <li><a href="{{ url_for('contact') }}">CONTACT</a></li>
+    </ul>
+</div>
             <div class="search">
                 <input class="srch" type="search" name="" placeholder="Type To text">
                 <button class="btn">Search</button>
@@ -64,21 +64,22 @@
             <p class="par">Welcome to GAC. Hope you have a pleasant experience <br> This website aims to help track real-time flights. 
                 <br>wherever, whenever </p>
 
-                <button class="cn"><a href="/register">REGISTER</a></button>
+            <button class="cn"><a href="{{ url_for('register') }}">Register</a></button>
 
-                <div class="form">
-                    <h2>Login Here</h2>
+            <div class="form">
+                <h2>Login Here</h2>
+                <form action="{{ url_for('contact') }}" method="get">
                     <input type="email" name="email" placeholder="Enter Email Here">
                     <input type="password" name="password" placeholder="Enter Password Here">
-                    <button class="btnn"><a href="/login">Login</a></button>
+                    <button class="btnn" type="submit">Login</button>
+                </form>
 
-                    <p class="link">Are you an admin?<br>
-                    <a href="/admin">Log in here</a></p>
-        
-
-                </div>
+                <p class="link">Are you an admin?<br>
+                    <a href="{{ url_for('admin') }}">Log in here</a></p>
+            </div>
         </div>
     </div>
     <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
 </body>
+
 </html>
