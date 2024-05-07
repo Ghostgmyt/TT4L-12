@@ -4,21 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Tracker</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}"> <!-- Link to home CSS file -->
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow: hidden;
+            overflow: hidden; /* Hide scrollbars */
         }
+
+        .main {
+            width: 100%;
+            height: 100%;
+        }
+
         iframe {
             width: 100%;
             height: 100%;
-            border: none; /* Remove border */
+            border: none;
         }
     </style>
 </head>
 <body>
-    <iframe src="https://globe.adsbexchange.com/"></iframe>
+    <div class="main">
+        <iframe src="https://globe.adsbexchange.com/" frameborder="0"></iframe>
+    </div>
 </body>
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Webpage Design</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
@@ -35,52 +36,56 @@
         })(document);
     </script>
 </head>
-<body>
+
+<body style="min-height: 100vh; overflow-y: auto;">
 
     <div class="main">
         <div class="navbar">
             <div class="icon">
-                <h2 class="logo">GACsystem</h2>
+                <h2 class="logo">GAC</h2>
             </div>
-
             <div class="menu">
                 <ul>
-                    <li><a href="{{url_for('home')}}">HOME</a></li>
-                    <li><a href="{{url_for('home')}}">ABOUT</a></li>
-                    <li><a href="{{url_for('flight_tracker')}}">FLIGHT TRACKER</a></li>
-                    <li><a href="{{url_for('admin')}}">ADMIN</a></li>
-                    <li><a href="{{url_for('home')}}">CONTACT</a></li>
+                    <li><a href="{{ url_for('home') }}">HOME</a></li>
+                    <li><a href="{{ url_for('commands1') }}">COMMANDS</a></li>
+                    <li><a href="{{ url_for('flight_tracker') }}">FLIGHT TRACKER</a></li>
+                    <li><a href="{{ url_for('admin') }}">ADMIN</a></li>
+                    <li><a href="{{ url_for('contact') }}">CONTACT</a></li>
                 </ul>
             </div>
-
             <div class="search">
                 <input class="srch" type="search" name="" placeholder="Type To text">
-                <a href="#"> <button class="btn">Search</button></a>
+                <button class="btn">Search</button>
             </div>
 
         </div> 
-        <div class="content">
+        <div class="content" style="min-height: calc(100vh - 200px);">
             <h1>GHOST<br><span>Air Traffic</span> <br>Control System</h1>
-            <p class="par">Welcome to GAC. Hope you have a pleasent experience <br> This website aims to help track real-time flights. 
-                <br>wherever,whenever </p>
+            <p class="par">Welcome to GAC. Hope you have a pleasant experience <br> This website aims to help track real-time flights. 
+                <br>wherever, whenever </p>
 
-                <button class="cn"><a href="{{url_for('register')}}">REGISTER</a></button>
+            <button class="cn"><a href="{{ url_for('register') }}">Register</a></button>
 
-                <div class="form">
-                    <h2>Login Here</h2>
+            <div class="form">
+                <h2>Login Here</h2>
+                <form>
                     <input type="email" name="email" placeholder="Enter Email Here">
-                    <input type="password" name="" placeholder="Enter Password Here">
-                    <button class="btnn"><a href="{{url_for('login')}}">Login</a></button>
+                    <input type="password" name="password" placeholder="Enter Password Here">
+                    <button class="btnn" type="button" onclick="scrollDown()">Login</button>
+                </form>
 
-                    <p class="link">Are you an admin?<br>
-                    <a href="{{url_for('admin')}}">Log in </a> here</a></p>
-        
-
-                </div>
-                    </div>
-                </div>
+                <p class="link">Are you an admin?<br>
+                    <a href="{{ url_for('admin') }}">Log in here</a></p>
+            </div>
         </div>
     </div>
     <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
+    <script>
+        function scrollDown() {
+            // Scroll to the bottom of the page
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+    </script>
 </body>
+
 </html>
