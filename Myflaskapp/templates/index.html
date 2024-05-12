@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATC Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">ATC Chat</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="chatType">Select Chat Type:</label>
+                    <select class="form-control" id="chatType">
+                        <option value="(-)">
+                        <option value="Departure">Departure</option>
+                        <option value="Landing">Landing</option>
+                        <option value="Emergencies">Emergencies</option>
+                        <option value="Miscellaneous">Miscellaneous</option>
+                    </select>
+                </div>
+                <div id="chat" style="height: 450px; overflow-y: auto;"></div>
+                <div class="input-group mt-3">
+                    <input id="messageInput" type="text" class="form-control" placeholder="Type your message...">
+                    <div class="input-group-append">
+                        <button id="sendBtn" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        $('#sendBtn').click(function() {
+            var message = $('#messageInput').val();
+            var chatType = $('#chatType').val();
+            socket.emit('send_message', { message: message, chatType: chatType });
+            $('#messageInput').val('');
+        });
+
+        socket.on('receive_message', function(data) {
+            $('#chat').append('<p><strong>' + data.role + ':</strong> ' + data.message + '</p>');
+            $('#chat').scrollTop($('#chat')[0].scrollHeight);
+        });
+    </script>
+</body>
+</html>
