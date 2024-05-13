@@ -27,9 +27,11 @@ instruction_map = {
         
     },
     'Emergencies': {
-        'mayday': 'Roger your Mayday. What is your request?',
-        'request landing' :'Emergency services are standing by.'
-        
+        'emergency declaration': 'Roger your Mayday. What is your request?',
+        'mayday mayday mayday': 'Roger your Mayday. What is your request?',
+        'maydaymaydaymayday': 'Roger your Mayday. What is your request?',
+        'request landing' :'Emergency services are standing by.',
+
     },
     'Miscellaneous': {
         'requesting diversion': 'Cleared to alternate airport',
@@ -66,3 +68,4 @@ def index():
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
+
