@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editable Table</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
         table {
             border-collapse: collapse;
             width: 100%;
@@ -26,6 +29,11 @@
         .status-green {
             background-color: #ccffcc;
         }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -38,21 +46,10 @@
             <th>Actions</th>
         </tr>
         <tr>
-            <td>123</td>
+            <td class="flight-number"></td>
             <td>12:00 PM</td>
             <td contenteditable="true" class="departure-status">Ready</td>
             <td class="status status-green"></td>
-            <td>
-                <button class="edit-row-btn">Edit</button>
-                <button class="save-changes-btn">Save</button>
-                <button class="remove-row-btn">Remove</button>
-            </td>
-        </tr>
-        <tr>
-            <td>456</td>
-            <td>1:00 PM</td>
-            <td contenteditable="true" class="departure-status">Not Ready</td>
-            <td class="status status-red"></td>
             <td>
                 <button class="edit-row-btn">Edit</button>
                 <button class="save-changes-btn">Save</button>
@@ -80,6 +77,10 @@
 
         function loadFromLocalStorage() {
             return JSON.parse(localStorage.getItem('tableData')) || [];
+        }
+
+        function generateRandomFlightNumber() {
+            return Math.floor(Math.random() * 900) + 100;
         }
 
         document.getElementById("editable-table").addEventListener("click", function(event) {
@@ -124,7 +125,7 @@
 
         document.getElementById("add-btn").addEventListener("click", function() {
             var newRow = "<tr>";
-            newRow += "<td contenteditable='true'></td>";
+            newRow += "<td class='flight-number'>" + generateRandomFlightNumber() + "</td>";
             newRow += "<td contenteditable='true'></td>";
             newRow += "<td contenteditable='true' class='departure-status'>Ready</td>";
             newRow += "<td class='status status-green'></td>";
@@ -175,4 +176,5 @@
     </script>
 </body>
 </html>
+
 
