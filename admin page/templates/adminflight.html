@@ -5,176 +5,182 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editable Table</title>
     <style>
-        body {
+            body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
         }
+
         table {
-            border-collapse: collapse;
             width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
+
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             text-align: left;
+            border-bottom: 1px solid #ddd;
+            position: relative; 
         }
+
         th {
             background-color: #f2f2f2;
+            font-weight: bold;
+            color: #333;
+            text-transform: uppercase;
         }
-        tr:hover {
-            background-color: #f2f2f2;
+
+        td {
+            color: #555;
         }
-        .status-red {
-            background-color: #ffcccc;
+
+        .actions {
+            white-space: nowrap;
         }
-        .status-green {
-            background-color: #ccffcc;
-        }
-        button {
-            padding: 5px 10px;
-            cursor: pointer;
+
+        .actions button {
             margin-right: 5px;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
         }
+
+        .actions button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .edit {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .edit:hover {
+            background-color: #0056b3;
+        }
+
+        .remove {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .remove:hover {
+            background-color: #bd2130;
+        }
+
+        .add {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .add:hover {
+            background-color: #218838;
+        }
+
+        .status-circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 10px; 
+        }
+
+        .status-ready {
+            background-color: #28a745;
+        }
+
+        .status-not-ready {
+            background-color: #dc3545;
+        }
+
+
     </style>
 </head>
 <body>
-    <table id="editable-table">
-        <tr>
-            <th>Flight Number</th>
-            <th>Departure Time</th>
-            <th>Departure Status</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-        <tr>
-            <td class="flight-number"></td>
-            <td>12:00 PM</td>
-            <td contenteditable="true" class="departure-status">Ready</td>
-            <td class="status status-green"></td>
-            <td>
-                <button class="edit-row-btn">Edit</button>
-                <button class="save-changes-btn">Save</button>
-                <button class="remove-row-btn">Remove</button>
-            </td>
-        </tr>
+    <table id="table">
+        <thead>
+            <tr>
+                <th>Airline</th>
+                <th>Flight Number</th>
+                <th>Departure Time</th>
+                <th>Departure Status</th>
+                <th class="actions">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table_data %}
+            <tr>
+                {% for item in row %}
+                <td>{{ item }}</td>
+                {% endfor %}
+                <td class="actions">
+                    <button class="edit" onclick="editRow(this)">Edit</button>
+                    <button class="remove" onclick="removeRow(this)">Remove</button>
+                    <button class="add" onclick="addRow(this)">Add</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 
-    <button id="add-btn">Add</button>
-
     <script>
-        function updateStatusColor(statusCell, status) {
-            statusCell.classList.remove('status-red', 'status-green');
-
-            if (status === 'Ready') {
-                statusCell.classList.add('status-green');
-            } else {
-                statusCell.classList.add('status-red');
-            }
-        }
-
-        function updateLocalStorage(data) {
-            localStorage.setItem('tableData', JSON.stringify(data));
-        }
-
-        function loadFromLocalStorage() {
-            return JSON.parse(localStorage.getItem('tableData')) || [];
-        }
-
-        function generateRandomFlightNumber() {
-            return Math.floor(Math.random() * 900) + 100;
-        }
-
-        document.getElementById("editable-table").addEventListener("click", function(event) {
-            var target = event.target;
-            if (target.classList.contains("edit-row-btn")) {
-                var row = target.parentNode.parentNode;
-                var cells = row.querySelectorAll("td:not(.status):not(:last-child)");
-                cells.forEach(function(cell) {
-                    var input = document.createElement("input");
-                    input.value = cell.textContent;
-                    cell.innerHTML = "";
-                    cell.appendChild(input);
-                });
-                row.classList.add('editing');
-            } else if (target.classList.contains("remove-row-btn")) {
-                var row = target.parentNode.parentNode;
-                var rowData = loadFromLocalStorage();
-                var rowIndex = Array.from(row.parentNode.children).indexOf(row);
-                rowData.splice(rowIndex, 1);
-                updateLocalStorage(rowData);
-                row.parentNode.removeChild(row);
-            } else if (target.classList.contains("save-changes-btn")) {
-                var row = target.parentNode.parentNode;
-                var cells = row.querySelectorAll("td:not(.status):not(:last-child)");
-                var rowData = loadFromLocalStorage();
-                var rowIndex = Array.from(row.parentNode.children).indexOf(row);
-                var newRowData = [];
-                cells.forEach(function(cell) {
-                    newRowData.push(cell.querySelector('input').value);
-                });
-                newRowData.push(row.querySelector('.departure-status').textContent); 
-                rowData[rowIndex] = newRowData;
-                updateLocalStorage(rowData);
-                row.querySelectorAll("td:not(.status):not(:last-child)").forEach(function(cell) {
-                    cell.textContent = cell.querySelector('input').value;
-                });
-                var statusCell = row.querySelector(".status");
-                updateStatusColor(statusCell, newRowData[2]); 
-                row.classList.remove('editing');
-            }
-        });
-
-        document.getElementById("add-btn").addEventListener("click", function() {
-            var newRow = "<tr>";
-            newRow += "<td class='flight-number'>" + generateRandomFlightNumber() + "</td>";
-            newRow += "<td contenteditable='true'></td>";
-            newRow += "<td contenteditable='true' class='departure-status'>Ready</td>";
-            newRow += "<td class='status status-green'></td>";
-            newRow += "<td>";
-            newRow += "<button class='edit-row-btn'>Edit</button>";
-            newRow += "<button class='save-changes-btn'>Save</button>";
-            newRow += "<button class='remove-row-btn'>Remove</button>";
-            newRow += "</td>";
-            newRow += "</tr>";
-            document.getElementById("editable-table").insertAdjacentHTML('beforeend', newRow);
-            var rowData = loadFromLocalStorage();
-            rowData.push(["", "", "Ready"]);
-            updateLocalStorage(rowData);
-        });
-
-        // Load data from local storage on page load
-        window.addEventListener("load", function() {
-            var rowData = loadFromLocalStorage();
-            var tableBody = document.querySelector("#editable-table tbody");
-            rowData.forEach(function(data) {
-                var row = document.createElement("tr");
-                data.forEach(function(cellData, index) {
-                    var cell = document.createElement("td");
-                    cell.textContent = cellData;
-                    if (index === 3) { 
-                        cell.className = "status";
-                        updateStatusColor(cell, data[2]); 
-                    }
-                    row.appendChild(cell);
-                });
-                var actionsCell = document.createElement("td");
-                var editBtn = document.createElement("button");
-                editBtn.textContent = "Edit";
-                editBtn.className = "edit-row-btn";
-                var saveBtn = document.createElement("button"); 
-                saveBtn.textContent = "Save";
-                saveBtn.className = "save-changes-btn";
-                var removeBtn = document.createElement("button");
-                removeBtn.textContent = "Remove";
-                removeBtn.className = "remove-row-btn";
-                actionsCell.appendChild(editBtn);
-                actionsCell.appendChild(saveBtn); 
-                actionsCell.appendChild(removeBtn);
-                row.appendChild(actionsCell);
-                tableBody.appendChild(row);
+        function editRow(button) {
+            var row = button.closest('tr');
+            var cells = row.querySelectorAll('td:not(:last-child)');
+            cells.forEach(function(cell) {
+                var input = document.createElement('input');
+                input.value = cell.textContent.trim();
+                cell.textContent = '';
+                cell.appendChild(input);
             });
-        });
+            button.textContent = 'Save';
+            button.onclick = function() {
+                saveRow(this);
+            };
+        }
+
+        function saveRow(button) {
+            var row = button.closest('tr');
+            var cells = row.querySelectorAll('td:not(:last-child)');
+            cells.forEach(function(cell) {
+                var value = cell.querySelector('input').value;
+                cell.textContent = value;
+            });
+            button.textContent = 'Edit';
+            button.onclick = function() {
+                editRow(this);
+            };
+            updateData(); 
+        }
+
+        function removeRow(button) {
+            var row = button.closest('tr');
+            row.parentNode.removeChild(row);
+            updateData(); 
+        }
+
+        function addRow(button) {
+            var row = button.closest('tr');
+            var newRow = document.createElement('tr'); 
+            newRow.innerHTML = '<td></td><td></td><td></td><td></td><td class="actions"><button class="edit" onclick="editRow(this)">Edit</button><button class="remove" onclick="removeRow(this)">Remove</button><button class="add" onclick="addRow(this)">Add</button></td>';
+            row.parentNode.insertBefore(newRow, row.nextSibling); 
+        }
+
+        function updateData() {
+            console.log('Data updated');
+            // You can send an AJAX request to update the data on the server if needed
+            // Example: $.post('/update', updated_data);
+        }
     </script>
 </body>
 </html>
+
 
 
