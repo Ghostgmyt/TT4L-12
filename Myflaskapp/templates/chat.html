@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ role }} Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function scrollToBottom() {
+            var chatBox = document.getElementById("chat-box");
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        window.onload = function() {
+            scrollToBottom();
+            fetchMessages();
+        }
+
+        function fetchMessages() {
+            fetch("{{ url_for('fetch_messages') }}")
+                .then(response => response.json())
+                .then(data => {
+                    const chatBox = document.getElementById("chat-box");
+                    chatBox.innerHTML = "";
+                    data.forEach(msg => {
+                        const messageElement = document.createElement("div");
+                        messageElement.classList.add("message");
+                        if (msg.accepted) {
+                            messageElement.classList.add("accepted");
+                        }
+                        messageElement.innerHTML = `
+                            <p><strong>${msg.role === 'ATC' ? 'ATC' : 'Pilot'}:</strong> ${msg.message}</p>
+                            ${msg.role === 'Pilot' && !msg.accepted && '{{ role }}' === 'ATC' ? `<button onclick="acceptMessage(${msg.id})" class="btn btn-success">Accept</button>` : ''}
+                        `;
+                        chatBox.appendChild(messageElement);
+                    });
+                    scrollToBottom();
+                });
+        }
+
+        function acceptMessage(messageId) {
+            fetch(`/accept_message/${messageId}`, { method: 'POST' })
+                .then(() => fetchMessages());
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('atc-message').value;
+            fetch(`/send_message/ATC`, { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(() => {
+                document.getElementById('atc-message').value = '';
+                fetchMessages();
+            });
+        }
+
+        setInterval(fetchMessages, 1000);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>{{ role }} Chat</h2>
+        <div id="chat-box" class="chat-box">
+            <!-- Messages will be loaded here dynamically -->
+        </div>
+        <div class="input-box">
+            {% if role == 'Pilot' %}
+            <form action="{{ url_for('send_message', role=role) }}" method="post">
+                <select name="instruction">
+                    {% for category, instructions in instruction_map.items() %}
+                        <optgroup label="{{ category }}">
+                        {% for instruction, response in instructions.items() %}
+                            <option value="{{ instruction }}">{{ instruction }}</option>
+                        {% endfor %}
+                        </optgroup>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+            {% else %}
+            <input type="text" id="atc-message" name="message">
+            <button onclick="sendMessage()" class="btn btn-primary">Send</button>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
