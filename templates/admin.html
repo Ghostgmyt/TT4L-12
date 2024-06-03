@@ -3,175 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editable Table</title>
+    <title>Admin Panel</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
         table {
-            border-collapse: collapse;
             width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin: 20px;
         }
+
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 15px;
             text-align: left;
+            border-bottom: 1px solid #ddd;
         }
+
         th {
-            background-color: #f2f2f2;
+            background-color: #333;
+            color: white;
+            text-transform: uppercase;
         }
-        tr:hover {
-            background-color: #f2f2f2;
+
+        td {
+            color: #333;
         }
-        .status-red {
-            background-color: #ffcccc;
+
+        .actions button {
+            margin-right: 5px;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
         }
-        .status-green {
-            background-color: #ccffcc;
+
+        .edit {
+            background-color: #428bca;
+            color: white;
+        }
+
+        .remove {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .add {
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        .flashes {
+            list-style-type: none;
+            padding: 10px 20px;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+
+        .flashes li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
         }
     </style>
 </head>
 <body>
-    <table id="editable-table">
-        <tr>
-            <th>Flight Number</th>
-            <th>Departure Time</th>
-            <th>Departure Status</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-        <tr>
-            <td>123</td>
-            <td>12:00 PM</td>
-            <td contenteditable="true" class="departure-status">Ready</td>
-            <td class="status status-green"></td>
-            <td>
-                <button class="edit-row-btn">Edit</button>
-                <button class="save-changes-btn">Save</button>
-                <button class="remove-row-btn">Remove</button>
-            </td>
-        </tr>
-        <tr>
-            <td>456</td>
-            <td>1:00 PM</td>
-            <td contenteditable="true" class="departure-status">Not Ready</td>
-            <td class="status status-red"></td>
-            <td>
-                <button class="edit-row-btn">Edit</button>
-                <button class="save-changes-btn">Save</button>
-                <button class="remove-row-btn">Remove</button>
-            </td>
-        </tr>
+    <nav>
+        <a href="/">Home</a>
+        <img src="profile.jpg" alt="Profile Picture" class="profile-picture">
+    </nav>
+    <table id="table">
+        <thead>
+            <tr>
+                <th>Airline</th>
+                <th>Flight Number</th>
+                <th>Departure Time</th>
+                <th>Departure Status</th>
+                <th class="actions">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table_data %}
+            <tr>
+                <form method="POST" action="/admin">
+                    <input type="hidden" name="id" value="{{ row[0] }}">
+                    <td><input type="text" name="airline" value="{{ row[1] }}"></td>
+                    <td><input type="text" name="flight_number" value="{{ row[2] }}"></td>
+                    <td><input type="text" name="departure_time" value="{{ row[3] }}"></td>
+                    <td>
+                        <select name="departure_status">
+                            <option value="READY" {% if row[4] == 'READY' %}selected{% endif %}>READY</option>
+                            <option value="NOT READY" {% if row[4] == 'NOT READY' %}selected{% endif %}>NOT READY</option>
+                        </select>
+                    </td>
+                    <td class="actions">
+                        <button class="edit" name="edit" value="{{ row[0] }}">Edit</button>
+                        <button class="remove" name="remove" value="{{ row[0] }}">Remove</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+            <tr>
+                <form method="POST" action="/admin">
+                    <td><input type="text" name="airline" placeholder="Airline"></td>
+                    <td><input type="text" name="flight_number" placeholder="Flight Number"></td>
+                    <td><input type="text" name="departure_time" placeholder="Departure Time"></td>
+                    <td>
+                        <select name="departure_status">
+                            <option value="READY">READY</option>
+                            <option value="NOT READY">NOT READY</option>
+                        </select>
+                    </td>
+                    <td class="actions">
+                        <button class="add" name="add">Add</button>
+                    </td>
+                </form>
+            </tr>
+        </tbody>
     </table>
 
-    <button id="add-btn">Add</button>
-
-    <script>
-        function updateStatusColor(statusCell, status) {
-            statusCell.classList.remove('status-red', 'status-green');
-
-            if (status === 'Ready') {
-                statusCell.classList.add('status-green');
-            } else {
-                statusCell.classList.add('status-red');
-            }
-        }
-
-        function updateLocalStorage(data) {
-            localStorage.setItem('tableData', JSON.stringify(data));
-        }
-
-        function loadFromLocalStorage() {
-            return JSON.parse(localStorage.getItem('tableData')) || [];
-        }
-
-        document.getElementById("editable-table").addEventListener("click", function(event) {
-            var target = event.target;
-            if (target.classList.contains("edit-row-btn")) {
-                var row = target.parentNode.parentNode;
-                var cells = row.querySelectorAll("td:not(.status):not(:last-child)");
-                cells.forEach(function(cell) {
-                    var input = document.createElement("input");
-                    input.value = cell.textContent;
-                    cell.innerHTML = "";
-                    cell.appendChild(input);
-                });
-                row.classList.add('editing');
-            } else if (target.classList.contains("remove-row-btn")) {
-                var row = target.parentNode.parentNode;
-                var rowData = loadFromLocalStorage();
-                var rowIndex = Array.from(row.parentNode.children).indexOf(row);
-                rowData.splice(rowIndex, 1);
-                updateLocalStorage(rowData);
-                row.parentNode.removeChild(row);
-            } else if (target.classList.contains("save-changes-btn")) {
-                var row = target.parentNode.parentNode;
-                var cells = row.querySelectorAll("td:not(.status):not(:last-child)");
-                var rowData = loadFromLocalStorage();
-                var rowIndex = Array.from(row.parentNode.children).indexOf(row);
-                var newRowData = [];
-                cells.forEach(function(cell) {
-                    newRowData.push(cell.querySelector('input').value);
-                });
-                newRowData.push(row.querySelector('.departure-status').textContent); 
-                rowData[rowIndex] = newRowData;
-                updateLocalStorage(rowData);
-                row.querySelectorAll("td:not(.status):not(:last-child)").forEach(function(cell) {
-                    cell.textContent = cell.querySelector('input').value;
-                });
-                var statusCell = row.querySelector(".status");
-                updateStatusColor(statusCell, newRowData[2]); 
-                row.classList.remove('editing');
-            }
-        });
-
-        document.getElementById("add-btn").addEventListener("click", function() {
-            var newRow = "<tr>";
-            newRow += "<td contenteditable='true'></td>";
-            newRow += "<td contenteditable='true'></td>";
-            newRow += "<td contenteditable='true' class='departure-status'>Ready</td>";
-            newRow += "<td class='status status-green'></td>";
-            newRow += "<td>";
-            newRow += "<button class='edit-row-btn'>Edit</button>";
-            newRow += "<button class='save-changes-btn'>Save</button>";
-            newRow += "<button class='remove-row-btn'>Remove</button>";
-            newRow += "</td>";
-            newRow += "</tr>";
-            document.getElementById("editable-table").insertAdjacentHTML('beforeend', newRow);
-            var rowData = loadFromLocalStorage();
-            rowData.push(["", "", "Ready"]);
-            updateLocalStorage(rowData);
-        });
-
-        // Load data from local storage on page load
-        window.addEventListener("load", function() {
-            var rowData = loadFromLocalStorage();
-            var tableBody = document.querySelector("#editable-table tbody");
-            rowData.forEach(function(data) {
-                var row = document.createElement("tr");
-                data.forEach(function(cellData, index) {
-                    var cell = document.createElement("td");
-                    cell.textContent = cellData;
-                    if (index === 3) { 
-                        cell.className = "status";
-                        updateStatusColor(cell, data[2]); 
-                    }
-                    row.appendChild(cell);
-                });
-                var actionsCell = document.createElement("td");
-                var editBtn = document.createElement("button");
-                editBtn.textContent = "Edit";
-                editBtn.className = "edit-row-btn";
-                var saveBtn = document.createElement("button"); 
-                saveBtn.textContent = "Save";
-                saveBtn.className = "save-changes-btn";
-                var removeBtn = document.createElement("button");
-                removeBtn.textContent = "Remove";
-                removeBtn.className = "remove-row-btn";
-                actionsCell.appendChild(editBtn);
-                actionsCell.appendChild(saveBtn); 
-                actionsCell.appendChild(removeBtn);
-                row.appendChild(actionsCell);
-                tableBody.appendChild(row);
-            });
-        });
-    </script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
 </body>
 </html>
