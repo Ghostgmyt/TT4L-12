@@ -83,7 +83,9 @@
     function addMessageToUI(data) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', data.role.toLowerCase());
+        const imageUrl = data.role === 'Pilot' ? 'https://cdn-icons-png.freepik.com/512/9159/9159713.png' : 'https://www.shutterstock.com/image-vector/changi-airport-control-tower-vector-600nw-2246008147.jpg';
         messageElement.innerHTML = `
+            <img src="${imageUrl}" alt="${data.role}" class="avatar">
             <div>
                 <strong>${data.role}:</strong> ${data.message}
             </div>
