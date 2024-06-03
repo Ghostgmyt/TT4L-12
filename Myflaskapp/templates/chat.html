@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="background"></div>
+    <div class="container">
+        <h2>{{ role }} Chat</h2>
+        <div id="chat-box" class="chat-box">
+            <!-- Messages will be loaded here dynamically -->
+        </div>
+        <div class="input-box">
+            {% if role == 'Pilot' %}
+            <input type="text" id="pilot-message" name="message">
+            <button onclick="sendMessage('Pilot')">Send</button>
+            <div id="category-container" class="category-buttons">
+                <button class="category-button" onclick="showInstructions('Departure')">Departure</button>
+                <button class="category-button" onclick="showInstructions('Landing')">Landing</button>
+                <button class="category-button" onclick="showInstructions('Emergencies')">Emergencies</button>
+                <button class="category-button" onclick="showInstructions('Miscellaneous')">Miscellaneous</button>
+            </div>
+            <div id="instruction-container" class="hidden">
+                <!-- Instruction buttons will be loaded here dynamically -->
+            </div>
+            {% elif role == 'ATC' %}
+            <input type="text" id="atc-message" name="message">
+            <button onclick="sendMessage('ATC')">Send</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+   <script>
+    const socket = io();
+
+    const instructionMap = {
+        'Departure': [
+            { instruction: 'Pushback', response: 'Pushback approved' },
+            { instruction: 'Taxi', response: 'Taxi to runway 32R, via taxiway Alpha, Bravo' },
+            { instruction: 'Takeoff', response: 'Winds 320 at 10, runway 32R, cleared for takeoff' },
+            { instruction: 'Requesting engine start', response: 'Engine start approved' },
+            { instruction: 'Preflight checks complete', response: 'Cleared for pushback and engine start' }
+        ],
+        'Landing': [
+            { instruction: 'Ready for landing', response: 'Cleared to land runway 32R' },
+            { instruction: 'Clear of the runway', response: 'Taxi to gate B7' }
+        ],
+        'Emergencies': [
+            { instruction: 'Emergency declaration', response: 'Roger your Mayday. What is your request?' },
+            { instruction: 'Request landing', response: 'Emergency services are standing by.' },
+            { instruction: 'Requesting assistance and instructions', response: 'I have cleared airspace for your emergency descent. Nearest suitable airport is 20 miles northwest. I will provide vectors for approach. Emergency services have been alerted. Confirm souls on board and fuel remaining.' }
+        ],
+        'Miscellaneous': [
+            { instruction: 'Requesting diversion', response: 'Cleared to alternate airport' },
+            { instruction: 'Weather alert', response: 'Turn 270' },
+            { instruction: 'Navigation system down', response: 'Turn right heading 180 for vectors' }
+        ]
+    };
+    
+    function sendMessage(role) {
+        const message = role === 'Pilot' ? document.getElementById('pilot-message').value : document.getElementById('atc-message').value;
+        socket.emit('send_message', {
+            role: role,
+            message: message,
+            instruction: message
+        });
+        if (role === 'Pilot') {
+            document.getElementById('pilot-message').value = '';
+        } else {
+            document.getElementById('atc-message').value = '';
+        }
+    }
+    
+    function addMessageToUI(data) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', data.role.toLowerCase());
+        messageElement.innerHTML = `
+            <div>
+                <strong>${data.role}:</strong> ${data.message}
+            </div>
+            <div class="timestamp">${data.timestamp}</div>
+        `;
+    
+        // Add accept button for ATC messages when a pilot sends a message and the message is not yet accepted
+        if (data.role === 'Pilot' && '{{ role }}' === 'ATC' && !data.accepted) {
+            const acceptButton = document.createElement('button');
+            acceptButton.classList.add('accept-button');
+            acceptButton.innerText = 'Accept';
+            acceptButton.onclick = () => acceptMessage(data.id);
+            messageElement.appendChild(acceptButton);
+        }
+    
+        document.getElementById('chat-box').appendChild(messageElement);
+        document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+    }
+    
+    function acceptMessage(messageId) {
+        socket.emit('accept_message', messageId);
+    }
+    
+    function fetchMessages() {
+        fetch("{{ url_for('fetch_messages') }}")
+            .then(response => response.json())
+            .then(data => {
+                const chatBox = document.getElementById("chat-box");
+                chatBox.innerHTML = "";
+                data.forEach(msg => {
+                    addMessageToUI({
+                        id: msg.id,
+                        role: msg.role,
+                        message: msg.message,
+                        timestamp: msg.timestamp,
+                        accepted: msg.accepted
+                    });
+                });
+                scrollToBottom();
+            });
+    }
+    
+    function showInstructions(category) {
+        const categoryContainer = document.getElementById('category-container');
+        const instructionContainer = document.getElementById('instruction-container');
+        instructionContainer.innerHTML = '';
+    
+        const instructions = instructionMap[category];
+        instructions.forEach(instructionObj => {
+            const button = document.createElement('button');
+            button.classList.add('instruction-button');
+            button.textContent = instructionObj.instruction;
+            button.onclick = () => {
+                document.getElementById('pilot-message').value = instructionObj.instruction;
+                sendMessage('Pilot'); // Send the instruction as a message
+                showCategories();
+            };
+            instructionContainer.appendChild(button);
+        });
+    
+        const backButton = document.createElement('button');
+        backButton.classList.add('back-button');
+        backButton.textContent = 'Back';
+        backButton.onclick = () => showCategories();
+        instructionContainer.appendChild(backButton);
+    
+        categoryContainer.classList.add('hidden');
+        instructionContainer.classList.remove('hidden');
+    }
+    
+    function showCategories() {
+        const categoryContainer = document.getElementById('category-container');
+        const instructionContainer = document.getElementById('instruction-container');
+    
+        categoryContainer.classList.remove('hidden');
+        instructionContainer.classList.add('hidden');
+    }
+    
+    setInterval(fetchMessages, 1000);
+    
+    
+</script>
+
+</body>
+</html>
