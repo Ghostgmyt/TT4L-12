@@ -11,7 +11,6 @@
     <div class="container">
         <h2>{{ role }} Chat</h2>
         <div id="chat-box" class="chat-box">
-            <!-- Messages will be loaded here dynamically -->
         </div>
         <div class="input-box">
             {% if role == 'Pilot' %}
@@ -24,7 +23,6 @@
                 <button class="category-button" onclick="showInstructions('Miscellaneous')">Miscellaneous</button>
             </div>
             <div id="instruction-container" class="hidden">
-                <!-- Instruction buttons will be loaded here dynamically -->
             </div>
             {% elif role == 'ATC' %}
             <input type="text" id="atc-message" name="message">
@@ -34,14 +32,11 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
 
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
    <script>
     const socket = io();
-
     const instructionMap = {
         'Departure': [
             { instruction: 'Pushback', response: 'Pushback approved' },
@@ -92,7 +87,6 @@
             <div class="timestamp">${data.timestamp}</div>
         `;
     
-        // Add accept button for ATC messages when a pilot sends a message and the message is not yet accepted
         if (data.role === 'Pilot' && '{{ role }}' === 'ATC' && !data.accepted) {
             const acceptButton = document.createElement('button');
             acceptButton.classList.add('accept-button');
@@ -165,9 +159,6 @@
     }
     
     setInterval(fetchMessages, 1000);
-    
-    
 </script>
-
 </body>
 </html>
