@@ -1,46 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flight Tracker</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='lib/leaflet/leaflet.css') }}" />
+    <title>Flights</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
+        body {
+            font-family: Arial, sans-serif;
         }
-
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
         #map {
-            height: 100vh;
+            height: 700px;
+            width: 100%;
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>Flights Map</h1>
+    </header>
     <div id="map"></div>
-    <script src="{{ url_for('static', filename='lib/leaflet/leaflet.js') }}"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
-        var map = L.map('map').setView([0, 0], 2);
+        // Initialize the map
+        var map = L.map('map').setView([20.0, 0.0], 2);  // Centered at the world
+
+        // Set up the OSM layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        fetch('{{ url_for("get_flights") }}')
+        // Fetch flight data from the server
+        fetch('/get_flights')
             .then(response => response.json())
-            .then(flightsData => {
-                flightsData.forEach(function(flight) {
-                    L.marker([flight.departure_lat, flight.departure_lon]).addTo(map)
-                        .bindPopup(`<b>Flight from ${flight.departure_city} to ${flight.arrival_city}</b><br>Flight ID: ${flight.flight_number}`);
+            .then(data => {
+                data.forEach(flight => {
+                    var departureMarker = L.marker([flight.departure_lat, flight.departure_lon])
+                        .bindPopup(`<b>${flight.airline} ${flight.flight_number}</b><br>Departure: ${flight.departure_city}`)
+                        .addTo(map);
                     
-                    L.polyline([
+                    var arrivalMarker = L.marker([flight.arrival_lat, flight.arrival_lon])
+                        .bindPopup(`<b>${flight.airline} ${flight.flight_number}</b><br>Arrival: ${flight.arrival_city}`)
+                        .addTo(map);
+
+                    var latlngs = [
                         [flight.departure_lat, flight.departure_lon],
                         [flight.arrival_lat, flight.arrival_lon]
-                    ]).addTo(map);
+                    ];
+                    
+                    var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
                 });
-            })
-            .catch(error => console.error('Error fetching flight data:', error));
+            });
     </script>
 </body>
 </html>
