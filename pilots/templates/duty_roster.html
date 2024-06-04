@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Duty Roster</title>
+</head>
+<body>
+    <h1>Duty Roster</h1>
+    <ul>
+        {% for pilot in pilots %}
+            <li>{{ pilot.name }} - {{ pilot.rank }}</li>
+        {% endfor %}
+    </ul>
+    <a href="/">Back to Pilots Page</a>
+    <a href="/chat">Chat Page</a>
+</body>
+</html>
