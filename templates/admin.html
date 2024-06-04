@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        td {
+            color: #333;
+        }
+
+        .actions button {
+            margin-right: 5px;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .edit {
+            background-color: #428bca;
+            color: white;
+        }
+
+        .remove {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .add {
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        .flashes {
+            list-style-type: none;
+            padding: 10px 20px;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+
+        .flashes li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <img src="profile.jpg" alt="Profile Picture" class="profile-picture">
+    </nav>
+    <table id="table">
+        <thead>
+            <tr>
+                <th>Airline</th>
+                <th>Flight Number</th>
+                <th>Departure Time</th>
+                <th>Departure Status</th>
+                <th class="actions">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table_data %}
+            <tr>
+                <form method="POST" action="/admin">
+                    <input type="hidden" name="id" value="{{ row[0] }}">
+                    <td><input type="text" name="airline" value="{{ row[1] }}"></td>
+                    <td><input type="text" name="flight_number" value="{{ row[2] }}"></td>
+                    <td><input type="text" name="departure_time" value="{{ row[3] }}"></td>
+                    <td>
+                        <select name="departure_status">
+                            <option value="READY" {% if row[4] == 'READY' %}selected{% endif %}>READY</option>
+                            <option value="NOT READY" {% if row[4] == 'NOT READY' %}selected{% endif %}>NOT READY</option>
+                        </select>
+                    </td>
+                    <td class="actions">
+                        <button class="edit" name="edit" value="{{ row[0] }}">Edit</button>
+                        <button class="remove" name="remove" value="{{ row[0] }}">Remove</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+            <tr>
+                <form method="POST" action="/admin">
+                    <td><input type="text" name="airline" placeholder="Airline"></td>
+                    <td><input type="text" name="flight_number" placeholder="Flight Number"></td>
+                    <td><input type="text" name="departure_time" placeholder="Departure Time"></td>
+                    <td>
+                        <select name="departure_status">
+                            <option value="READY">READY</option>
+                            <option value="NOT READY">NOT READY</option>
+                        </select>
+                    </td>
+                    <td class="actions">
+                        <button class="add" name="add">Add</button>
+                    </td>
+                </form>
+            </tr>
+        </tbody>
+    </table>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+</body>
+</html>
