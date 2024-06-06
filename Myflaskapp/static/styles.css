@@ -1,0 +1,171 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://www.stantec.com/content/dam/stantec/images/projects/0012/logan-international-airport-32557.jpg');
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: rgba(244, 244, 244, 0.9);
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+}
+
+.chat-box {
+    height: 380px;
+    overflow-y: auto;
+    border: 5px solid #ccc;
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+.input-box {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+button {
+    padding: 10px 30px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.category-buttons {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.category-button, .instruction-button, .back-button {
+    width: 48%;
+    padding: 48px;
+    font-size: 25px;
+    margin: 10px 1%;
+    border-radius: 15px;
+    border: none;
+    transition: background-color 0.3s ease;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.category-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.category-button:hover {
+    background-color: #0056b3;
+}
+
+.instruction-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.instruction-button:hover {
+    background-color: #218838;
+}
+
+.back-button {
+    background-color: #dc3545;
+    color: white;
+    margin-top: 10px;
+}
+
+.back-button:hover {
+    background-color: #c82333;
+}
+
+.accept-button {
+    margin-top: 5px;
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.accept-button:hover {
+    background-color: #218838;
+}
+
+.hidden {
+    display: none;
+}
+
+.message {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+}
+
+.message.pilot {
+    background-color: #e1f5fe;
+    border-left: 5px solid #0288d1;
+}
+
+.message.atc {
+    background-color: #cfffd8;
+    border-left: 5px solid #00c92f;
+}
+
+.timestamp {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
