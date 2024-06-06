@@ -2,20 +2,36 @@ from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
 from datetime import datetime
+import os
 
+# Determine the root directory of the Flask application
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+# Initialize Flask app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'chat.db')
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Set a secret key for security
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
+# Define the Flight model
+class Flight(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    flight_id = db.Column(db.String(10), unique=True, nullable=False)
+    flight_number = db.Column(db.String(10), nullable=False)
+    messages = db.relationship('Message', backref='flight', lazy=True)
+
+# Define the Message model
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     role = db.Column(db.String(10), nullable=False)
     message = db.Column(db.String(200), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     accepted = db.Column(db.Boolean, default=False)
+    flight_id = db.Column(db.Integer, db.ForeignKey('flight.id'), nullable=False)
+    flight = db.relationship('Flight', backref=db.backref('messages', lazy=True))
 
+# Define the predefined responses for ATC
 instruction_map = {
     'Departure': {
         'Pushback': 'Pushback approved',
@@ -40,18 +56,33 @@ instruction_map = {
     }
 }
 
+# Define the flight information
+flights = [
+    {'flight_id': 'A001', 'flight_number': 'UA1234'},
+    {'flight_id': 'A002', 'flight_number': 'AA5678'},
+    {'flight_id': 'A003', 'flight_number': 'DL9012'}
+]
+
+# Define routes
 @app.route('/')
-def chat_home():
-    return render_template('chat_home.html')
+def index():
+    # Render the index page with flight links
+    return render_template('index.html', flights=flights)
 
-@app.route('/chat/<role>')
-def chat(role):
-    messages = Message.query.order_by(Message.timestamp).all()
-    return render_template('chat.html', role=role, messages=messages, instruction_map=instruction_map)
+@app.route('/role/<flight_id>')
+def role_selection(flight_id):
+    # Render the role selection page for the given flight
+    return render_template('role_selection.html', flight_id=flight_id)
 
-@app.route('/fetch_messages')
-def fetch_messages():
-    messages = Message.query.order_by(Message.timestamp).all()
+@app.route('/chat/<flight_id>/<role>')
+def chat(flight_id, role):
+    # Render the chat page for the given flight and role
+    return render_template('chat.html', flight_id=flight_id, role=role)
+
+@app.route('/fetch_messages/<flight_id>')
+def fetch_messages_for_flight(flight_id):
+    # Fetch messages for the given flight from the database
+    messages = Message.query.filter_by(flight_id=flight_id).order_by(Message.timestamp).all()
     return jsonify([{
         'id': msg.id,
         'role': msg.role,
@@ -59,22 +90,18 @@ def fetch_messages():
         'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
         'accepted': msg.accepted
     } for msg in messages])
-
+    
+# Define socket events
 @socketio.on('send_message')
 def send_message(data):
     role = data['role']
-    if role == 'Pilot':
-        instruction = data['instruction']
-        message = instruction
-    else:
-        message = data['message']
-        for category, instructions in instruction_map.items():
-            if message in instructions:
-                message = instructions[message]
-                break
-    new_message = Message(role=role, message=message)
+    message = data['message']
+    flight_id = data['flight_id']
+    
+    new_message = Message(role=role, message=message, flight_id=flight_id)
     db.session.add(new_message)
     db.session.commit()
+
     socketio.emit('new_message', {
         'role': role,
         'message': message,
@@ -88,25 +115,16 @@ def accept_message(message_id):
     message = Message.query.get_or_404(message_id)
     message.accepted = True
     db.session.commit()
+    
+    socketio.emit('message_accepted', {
+        'id': message.id,
+        'role': message.role,
+        'message': message.message,
+        'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+        'accepted': message.accepted
+    }, broadcast=True)
 
-    # Send response to the pilot
-    response_message = None
-    for category, instructions in instruction_map.items():
-        if message.message in instructions:
-            response_message = instructions[message.message]
-            break
-    if response_message:
-        new_message = Message(role='ATC', message=response_message)
-        db.session.add(new_message)
-        db.session.commit()
-        socketio.emit('new_message', {
-            'role': 'ATC',
-            'message': response_message,
-            'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-            'id': new_message.id,
-            'accepted': new_message.accepted
-        }, broadcast=True)
-
+# Run the app
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
