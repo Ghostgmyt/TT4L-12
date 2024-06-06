@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Webpage Design</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
+    <style>
+        .flash-message {
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .flash-message.error {
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+        .flash-message.success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+    </style>
+</head>
+
+<body style="min-height: 100vh; overflow-y: auto;">
+
+    <div class="main">
+        <div class="navbar">
+            <div class="icon">
+                <h2 class="logo">GAC</h2>
+            </div>
+            <div class="menu">
+                <ul>
+                    <li><a href="{{ url_for('home') }}">HOME</a></li>
+                    <li><a href="{{ url_for('home') }}">COMMANDS</a></li>
+                    <li><a href="{{ url_for('flights') }}">FLIGHTS</a></li>
+                    <li><a href="{{ url_for('admin') }}">ADMIN</a></li>
+                    <li><a href="{{ url_for('contact') }}">CONTACT</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="content" style="min-height: calc(100vh - 200px);">
+            <h1>GHOST<br><span>Air Traffic</span> <br>Control System</h1>
+            <p class="par">Welcome to GAC. Hope you have a pleasant experience <br> This website aims to help track real-time flights.
+                <br>wherever, whenever </p>
+
+            <button class="cn"><a href="{{ url_for('register') }}">Login Here</a></button>
+
+            <div class="form">
+                <h2>Login Here</h2>
+                <form action="{{ url_for('login') }}" method="POST" autocomplete="off" onsubmit="return validateLoginForm()">
+                    <input type="text" name="id" placeholder="Enter ID Here" required autocomplete="off">
+                    <input type="password" name="password" placeholder="Enter Password Here" required autocomplete="off">
+                    <button class="btnn" type="submit">Login</button>
+                </form>
+                <div id="flashMessageContainer">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
+    <script>
+        function scrollDown() {
+            // Scroll to the bottom of the page
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function validateLoginForm() {
+            const idField = document.querySelector('input[name="id"]');
+            const passwordField = document.querySelector('input[name="password"]');
+            let isValid = true;
+
+            if (!idField.value) {
+                idField.setCustomValidity('Please fill out this field.');
+                idField.reportValidity();
+                isValid = false;
+            } else {
+                idField.setCustomValidity('');
+            }
+
+            if (!passwordField.value) {
+                passwordField.setCustomValidity('Please fill out this field.');
+                passwordField.reportValidity();
+                isValid = false;
+            } else {
+                passwordField.setCustomValidity('');
+            }
+
+            return isValid;
+        }
+    </script>
+</body>
+
+</html>
