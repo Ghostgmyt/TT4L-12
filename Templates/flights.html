@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Map</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            background-color: #f4f4f4;
+        }
+        .navbar {
+            background-color: #343a40;
+        }
+        .navbar-brand, .nav-link {
+            color: #ffffff !important;
+        }
+        #map {
+            height: 600px;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Flight Map</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div id="map"></div>
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([4.1755, 73.5093], 3); // Centered at Maldives
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+        }).addTo(map);
+
+        fetch('/get_flights')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(flight => {
+                    var departureMarker = L.marker([flight.departure_lat, flight.departure_lon]).addTo(map);
+                    var arrivalMarker = L.marker([flight.arrival_lat, flight.arrival_lon]).addTo(map);
+                    var latlngs = [
+                        [flight.departure_lat, flight.departure_lon],
+                        [flight.arrival_lat, flight.arrival_lon]
+                    ];
+                    var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
+                });
+            });
+    </script>
+</body>
+</html>
