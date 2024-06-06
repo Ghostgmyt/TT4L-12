@@ -4,170 +4,137 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            font-family: 'Arial', sans-serif;
             background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
         }
-
-        nav {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .navbar {
+            background-color: #343a40;
         }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
+        .navbar-brand, .nav-link {
+            color: #ffffff !important;
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            margin: 20px;
+        .container {
+            margin-top: 50px;
         }
-
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        .card {
+            margin-bottom: 20px;
         }
-
-        th {
-            background-color: #333;
-            color: white;
-            text-transform: uppercase;
-        }
-
-        td {
-            color: #333;
-        }
-
-        .actions button {
-            margin-right: 5px;
-            padding: 8px 16px;
-            border: none;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .edit {
-            background-color: #428bca;
+        .card-header {
+            background-color: #007bff;
             color: white;
         }
-
-        .remove {
-            background-color: #d9534f;
-            color: white;
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
         }
-
-        .add {
-            background-color: #5cb85c;
-            color: white;
-        }
-
-        .flashes {
-            list-style-type: none;
-            padding: 10px 20px;
-            margin: 0 auto;
-            max-width: 600px;
-        }
-
-        .flashes li {
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 4px;
-        }
-
-        .error {
-            background-color: #f2dede;
-            color: #a94442;
-        }
-
-        .success {
-            background-color: #dff0d8;
-            color: #3c763d;
+        .table {
+            background-color: #ffffff;
         }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="/">Home</a>
-        <img src="profile.jpg" alt="Profile Picture" class="profile-picture">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Admin Panel</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+            </ul>
+        </div>
     </nav>
-    <table id="table">
-        <thead>
-            <tr>
-                <th>Airline</th>
-                <th>Flight Number</th>
-                <th>Departure Time</th>
-                <th>Departure Status</th>
-                <th class="actions">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in table_data %}
-            <tr>
-                <form method="POST" action="/admin">
-                    <input type="hidden" name="id" value="{{ row[0] }}">
-                    <td><input type="text" name="airline" value="{{ row[1] }}"></td>
-                    <td><input type="text" name="flight_number" value="{{ row[2] }}"></td>
-                    <td><input type="text" name="departure_time" value="{{ row[3] }}"></td>
-                    <td>
-                        <select name="departure_status">
-                            <option value="READY" {% if row[4] == 'READY' %}selected{% endif %}>READY</option>
-                            <option value="NOT READY" {% if row[4] == 'NOT READY' %}selected{% endif %}>NOT READY</option>
-                        </select>
-                    </td>
-                    <td class="actions">
-                        <button class="edit" name="edit" value="{{ row[0] }}">Edit</button>
-                        <button class="remove" name="remove" value="{{ row[0] }}">Remove</button>
-                    </td>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">Add Flight</div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="form-group">
+                        <label for="airline">Airline</label>
+                        <input type="text" class="form-control" id="airline" name="airline" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="flight_number">Flight Number</label>
+                        <input type="text" class="form-control" id="flight_number" name="flight_number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_time">Departure Time</label>
+                        <input type="text" class="form-control" id="departure_time" name="departure_time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_status">Departure Status</label>
+                        <input type="text" class="form-control" id="departure_status" name="departure_status" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_lat">Departure Latitude</label>
+                        <input type="text" class="form-control" id="departure_lat" name="departure_lat" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_lon">Departure Longitude</label>
+                        <input type="text" class="form-control" id="departure_lon" name="departure_lon" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="arrival_lat">Arrival Latitude</label>
+                        <input type="text" class="form-control" id="arrival_lat" name="arrival_lat" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="arrival_lon">Arrival Longitude</label>
+                        <input type="text" class="form-control" id="arrival_lon" name="arrival_lon" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" name="add">Add Flight</button>
                 </form>
-            </tr>
-            {% endfor %}
-            <tr>
-                <form method="POST" action="/admin">
-                    <td><input type="text" name="airline" placeholder="Airline"></td>
-                    <td><input type="text" name="flight_number" placeholder="Flight Number"></td>
-                    <td><input type="text" name="departure_time" placeholder="Departure Time"></td>
-                    <td>
-                        <select name="departure_status">
-                            <option value="READY">READY</option>
-                            <option value="NOT READY">NOT READY</option>
-                        </select>
-                    </td>
-                    <td class="actions">
-                        <button class="add" name="add">Add</button>
-                    </td>
-                </form>
-            </tr>
-        </tbody>
-    </table>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <ul class="flashes">
-        {% for category, message in messages %}
-        <li class="{{ category }}">{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Manage Flights</div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Airline</th>
+                            <th>Flight Number</th>
+                            <th>Departure Time</th>
+                            <th>Departure Status</th>
+                            <th>Departure Latitude</th>
+                            <th>Departure Longitude</th>
+                            <th>Arrival Latitude</th>
+                            <th>Arrival Longitude</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in table_data %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                            <td>{{ row[3] }}</td>
+                            <td>{{ row[4] }}</td>
+                            <td>{{ row[5] }}</td>
+                            <td>{{ row[6] }}</td>
+                            <td>{{ row[7] }}</td>
+                            <td>{{ row[8] }}</td>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    <input type="hidden" name="remove" value="{{ row[0] }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                </form>
+                                <form method="post" style="display:inline;">
+                                    <input type="hidden" name="edit" value="{{ row[0] }}">
+                                    <button type="submit" class="btn btn-warning btn-sm">Edit</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
