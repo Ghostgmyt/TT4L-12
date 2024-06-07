@@ -14,6 +14,7 @@ body, html {
     background-image: url('https://www.stantec.com/content/dam/stantec/images/projects/0012/logan-international-airport-32557.jpg');
     background-size: cover;
     z-index: 1;
+    filter: blur(8px);
 }
 
 .container {
@@ -24,7 +25,7 @@ body, html {
     border-radius: 10px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     position: relative;
-    z-index: 2; /* Higher than background */
+    z-index: 2; 
 }
 
 h2 {
