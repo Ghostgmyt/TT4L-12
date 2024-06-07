@@ -1,20 +1,28 @@
 from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
 from datetime import datetime
+import sqlite3
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
-app.config['SECRET_KEY'] = 'your_secret_key_here'  # Set a secret key for security
-db = SQLAlchemy(app)
+app.config['SECRET_KEY'] = 'your_secret_key_here'
 socketio = SocketIO(app)
 
-class Message(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.String(10), nullable=False)
-    message = db.Column(db.String(200), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    accepted = db.Column(db.Boolean, default=False)
+DB_FILE = 'chat.db'
+
+def create_tables():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    role TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    accepted BOOLEAN DEFAULT 0
+                 )''')
+    conn.commit()
+    conn.close()
+
+create_tables()
 
 instruction_map = {
     'Departure': {
@@ -46,19 +54,39 @@ def chat_home():
 
 @app.route('/chat/<role>')
 def chat(role):
-    messages = Message.query.order_by(Message.timestamp).all()
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT * FROM messages ORDER BY timestamp")
+    rows = c.fetchall()
+    messages = []
+    for row in rows:
+        messages.append({
+            'id': row[0],
+            'role': row[1],
+            'message': row[2],
+            'timestamp': row[3],
+            'accepted': row[4]
+        })
+    conn.close()
     return render_template('chat.html', role=role, messages=messages, instruction_map=instruction_map)
 
 @app.route('/fetch_messages')
 def fetch_messages():
-    messages = Message.query.order_by(Message.timestamp).all()
-    return jsonify([{
-        'id': msg.id,
-        'role': msg.role,
-        'message': msg.message,
-        'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-        'accepted': msg.accepted
-    } for msg in messages])
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT * FROM messages ORDER BY timestamp")
+    rows = c.fetchall()
+    messages = []
+    for row in rows:
+        messages.append({
+            'id': row[0],
+            'role': row[1],
+            'message': row[2],
+            'timestamp': row[3],
+            'accepted': row[4]
+        })
+    conn.close()
+    return jsonify(messages)
 
 @socketio.on('send_message')
 def send_message(data):
@@ -72,42 +100,43 @@ def send_message(data):
             if message in instructions:
                 message = instructions[message]
                 break
-    new_message = Message(role=role, message=message)
-    db.session.add(new_message)
-    db.session.commit()
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("INSERT INTO messages (role, message) VALUES (?, ?)", (role, message))
+    conn.commit()
+    conn.close()
     socketio.emit('new_message', {
         'role': role,
         'message': message,
-        'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-        'id': new_message.id,
-        'accepted': new_message.accepted
+        'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+        'id': None,
+        'accepted': False
     }, broadcast=True)
 
 @socketio.on('accept_message')
 def accept_message(message_id):
-    message = Message.query.get_or_404(message_id)
-    message.accepted = True
-    db.session.commit()
-
-    # Send response to the pilot
-    response_message = None
-    for category, instructions in instruction_map.items():
-        if message.message in instructions:
-            response_message = instructions[message.message]
-            break
-    if response_message:
-        new_message = Message(role='ATC', message=response_message)
-        db.session.add(new_message)
-        db.session.commit()
-        socketio.emit('new_message', {
-            'role': 'ATC',
-            'message': response_message,
-            'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-            'id': new_message.id,
-            'accepted': new_message.accepted
-        }, broadcast=True)
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("UPDATE messages SET accepted = 1 WHERE id = ?", (message_id,))
+    conn.commit()
+    c.execute("SELECT * FROM messages WHERE id = ?", (message_id,))
+    row = c.fetchone()
+    if row:
+        message = row[2]
+        for category, instructions in instruction_map.items():
+            if message in instructions:
+                response_message = instructions[message]
+                c.execute("INSERT INTO messages (role, message) VALUES (?, ?)", ('ATC', response_message))
+                conn.commit()
+                socketio.emit('new_message', {
+                    'role': 'ATC',
+                    'message': response_message,
+                    'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                    'id': None,
+                    'accepted': False
+                }, broadcast=True)
+                break
+    conn.close()
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     socketio.run(app, debug=True)
