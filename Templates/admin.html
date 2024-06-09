@@ -7,7 +7,10 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #f4f4f4;
+            background-image: url("{{ url_for('static', filename='background2.jpg') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: white;
         }
         .navbar {
             background-color: #343a40;
@@ -17,9 +20,13 @@
         }
         .container {
             margin-top: 50px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
         }
         .card {
             margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
         }
         .card-header {
             background-color: #007bff;
@@ -31,6 +38,11 @@
         }
         .table {
             background-color: #ffffff;
+        }
+        .time-display {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -46,10 +58,20 @@
         </div>
     </nav>
     <div class="container">
+        <div class="time-display" id="time-display">
+            Current Time: <span id="current-time">{{ current_time }}</span>
+        </div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
         <div class="card">
             <div class="card-header">Add Flight</div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" onsubmit="return validateFlightTime()">
                     <div class="form-group">
                         <label for="airline">Airline</label>
                         <input type="text" class="form-control" id="airline" name="airline" required>
@@ -59,8 +81,8 @@
                         <input type="text" class="form-control" id="flight_number" name="flight_number" required>
                     </div>
                     <div class="form-group">
-                        <label for="departure_time">Departure Time</label>
-                        <input type="text" class="form-control" id="departure_time" name="departure_time" required>
+                        <label for="departure_time">Departure Time (YYYY-MM-DD HH:MM:SS)</label>
+                        <input type="datetime-local" class="form-control" id="departure_time" name="departure_time" required>
                     </div>
                     <div class="form-group">
                         <label for="departure_status">Departure Status</label>
@@ -117,14 +139,17 @@
                             <td>{{ row[7] }}</td>
                             <td>{{ row[8] }}</td>
                             <td>
+                                {% if row[3] > current_time %}
                                 <form method="post" style="display:inline;">
                                     <input type="hidden" name="remove" value="{{ row[0] }}">
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                                 </form>
-                                <form method="post" style="display:inline;">
-                                    <input type="hidden" name="edit" value="{{ row[0] }}">
+                                <form method="get" action="/edit_flight/{{ row[0] }}" style="display:inline;">
                                     <button type="submit" class="btn btn-warning btn-sm">Edit</button>
                                 </form>
+                                {% else %}
+                                <button class="btn btn-secondary btn-sm" disabled>Past Flight</button>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -133,8 +158,30 @@
             </div>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function updateTime() {
+            const currentTimeElement = document.getElementById('current-time');
+            let currentTime = new Date(currentTimeElement.textContent);
+
+            setInterval(() => {
+                currentTime.setSeconds(currentTime.getSeconds() + 60);
+                currentTimeElement.textContent = currentTime.toISOString().slice(0, 19).replace('T', ' ');
+            }, 1000 / 60);
+        }
+
+        function validateFlightTime() {
+            const departureTimeInput = document.getElementById('departure_time');
+            const departureTime = new Date(departureTimeInput.value);
+            const currentTime = new Date(document.getElementById('current-time').textContent);
+
+            if (departureTime < currentTime) {
+                alert('Departure time cannot be in the past.');
+                return false;
+            }
+            return true;
+        }
+
+        window.onload = updateTime;
+    </script>
 </body>
 </html>

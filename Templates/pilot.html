@@ -1,69 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <title>Webpage Design</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
-    <script>
-        (function(doc){
-          var scriptElm = doc.scripts[doc.scripts.length - 1];
-          var warn = ['[ionicons] Deprecated script, please remove: ' + scriptElm.outerHTML];
-        
-          warn.push('To improve performance it is recommended to set the differential scripts in the head as follows:')
-        
-          var parts = scriptElm.src.split('/');
-          parts.pop();
-          parts.push('ionicons');
-          var url = parts.join('/');
-        
-          var scriptElm = doc.createElement('script');
-          scriptElm.setAttribute('type', 'module');
-          scriptElm.src = url + '/ionicons.esm.js';
-          warn.push(scriptElm.outerHTML);
-          scriptElm.setAttribute('data-stencil-namespace', 'ionicons');
-          doc.head.appendChild(scriptElm);
-        
-          
-          scriptElm = doc.createElement('script');
-          scriptElm.setAttribute('nomodule', '');
-          scriptElm.src = url + '/ionicons.js';
-          warn.push(scriptElm.outerHTML);
-          scriptElm.setAttribute('data-stencil-namespace', 'ionicons');
-          doc.head.appendChild(scriptElm)
-          
-          console.warn(warn.join('\n'));
-        
-        })(document);
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pilots</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url("{{ url_for('static', filename='background2.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            padding-top: 50px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .pilot-list {
+            margin-top: 20px;
+        }
+
+        .pilot-item {
+            background-color: rgba(0, 123, 255, 0.8);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .pilot-item i {
+            margin-right: 10px;
+        }
+
+        .button {
+            background-color: rgba(0, 123, 255, 0.8);
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .button:hover {
+            background-color: rgba(0, 56, 179, 0.8);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .role-button {
+            background-color: rgba(0, 123, 255, 0.8);
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .role-button:hover {
+            background-color: rgba(0, 56, 179, 0.8);
+        }
+    </style>
 </head>
-
-<body style="min-height: 100vh; overflow-y: auto;">
-
-    <div class="main">
-        <div class="navbar">
-            <div class="icon">
-                <h2 class="logo">GAC</h2>
-            </div>
-            <div class="menu">
-                <ul>
-                    <li><a href="{{ url_for('home') }}">HOME</a></li>
-                    <li><a href="{{ url_for('home') }}">COMMANDS</a></li>
-                    <li><a href="{{ url_for('flight_tracker') }}">FLIGHT TRACKER</a></li>
-                    <li><a href="{{ url_for('admin') }}">ADMIN</a></li>
-                    <li><a href="{{ url_for('contact') }}">CONTACT</a></li>
-                </ul>
-            </div>
-        </div> 
-        <div class="content" style="min-height: calc(100vh - 200px);">
-            <h1>GHOST<br><span>Air Traffic</span> <br>Control System</h1>
-            <p class="par">Welcome to GAC. Hope you have a pleasant experience <br> This website aims to help track real-time flights. 
-                <br>wherever, whenever </p>
-
-            <button class="cn"><a href="{{ url_for('register') }}">Register</a></button>
-
+<body>
+    <div class="container">
+        <h1>Welcome to the Pilots Page</h1>
+        <div class="pilot-list">
+            <!-- Assuming you pass a list of pilots to the template -->
+            {% for pilot in pilots %}
+                <div class="pilot-item">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ pilot.name }} - {{ pilot.rank }}</span>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="text-center">
+            <a href="/my_flights" class="btn btn-primary button">
+                <i class="fas fa-clipboard-list"></i> My Flights
+            </a>
+            <a href="{{ url_for('chat', role='Pilot') }}" class="role-button">
+                <i class="fas fa-comments"></i> Chat
+            </a>
         </div>
     </div>
-    <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
 </body>
-
 </html>

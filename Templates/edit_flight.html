@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Flight</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="datetime-local"],
+        input[type="number"] {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Flight</h1>
+        <form action="" method="post">
+            <label for="airline">Airline:</label>
+            <input type="text" id="airline" name="airline" value="{{ flight[1] }}" required>
+
+            <label for="flight_number">Flight Number:</label>
+            <input type="text" id="flight_number" name="flight_number" value="{{ flight[2] }}" required>
+
+            <label for="departure_time">Departure Time:</label>
+            <input type="datetime-local" id="departure_time" name="departure_time" value="{{ flight[3] }}" required>
+
+            <label for="departure_status">Departure Status:</label>
+            <input type="text" id="departure_status" name="departure_status" value="{{ flight[4] }}" required>
+
+            <label for="departure_lat">Departure Latitude:</label>
+            <input type="number" id="departure_lat" name="departure_lat" value="{{ flight[5] }}" required>
+
+            <label for="departure_lon">Departure Longitude:</label>
+            <input type="number" id="departure_lon" name="departure_lon" value="{{ flight[6] }}" required>
+
+            <label for="arrival_lat">Arrival Latitude:</label>
+            <input type="number" id="arrival_lat" name="arrival_lat" value="{{ flight[7] }}" required>
+
+            <label for="arrival_lon">Arrival Longitude:</label>
+            <input type="number" id="arrival_lon" name="arrival_lon" value="{{ flight[8] }}" required>
+
+            <input type="submit" value="Save Changes">
+        </form>
+    </div>
+</body>
+</html>

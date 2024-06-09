@@ -1,62 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flight Map</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        body {
-            background-color: #f4f4f4;
-        }
-        .navbar {
-            background-color: #343a40;
-        }
-        .navbar-brand, .nav-link {
-            color: #ffffff !important;
-        }
-        #map {
-            height: 600px;
-            margin-top: 50px;
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Flight Map</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Home</a>
-                </li>
-            </ul>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Flight Map</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <style>
+            body {
+                background-color: #f4f4f4;
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            .navbar {
+                background-color: #343a40;
+            }
+            .navbar-brand, .nav-link {
+                color: #ffffff !important;
+            }
+            #map {
+                height: 600px;
+                margin-top: 50px;
+            }
+            .container {
+                text-align: center;
+                padding: 20px;
+            }
+            .map-info {
+                background-color: rgba(255, 255, 255, 0.8);
+                border-radius: 5px;
+                padding: 10px;
+                position: absolute;
+                z-index: 1000;
+                display: none;
+            }
+            .marker:hover .map-info {
+                display: block;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+            .marker {
+                animation: fadeIn 0.5s;
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <a class="navbar-brand" href="#">Flight Map</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container">
+            <div id="map"></div>
         </div>
-    </nav>
-    <div class="container">
-        <div id="map"></div>
-    </div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([4.1755, 73.5093], 3); // Centered at Maldives
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script>
+            var map = L.map('map').setView([4.1755, 73.5093], 3); // Centered at Maldives
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-        }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+            }).addTo(map);
 
-        fetch('/get_flights')
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(flight => {
-                    var departureMarker = L.marker([flight.departure_lat, flight.departure_lon]).addTo(map);
-                    var arrivalMarker = L.marker([flight.arrival_lat, flight.arrival_lon]).addTo(map);
-                    var latlngs = [
-                        [flight.departure_lat, flight.departure_lon],
-                        [flight.arrival_lat, flight.arrival_lon]
-                    ];
-                    var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
+            fetch('/get_flights')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(flight => {
+                        var departureMarker = L.marker([flight.departure_lat, flight.departure_lon])
+                            .addTo(map)
+                            .bindPopup(`
+                                <strong>Airline:</strong> ${flight.airline}<br>
+                                <strong>Flight Number:</strong> ${flight.flight_number}<br>
+                                <strong>Departure Time:</strong> ${flight.departure_time}<br>
+                                <strong>Departure Status:</strong> ${flight.departure_status}
+                            `);
+                        var arrivalMarker = L.marker([flight.arrival_lat, flight.arrival_lon])
+                            .addTo(map)
+                            .bindPopup(`
+                                <strong>Airline:</strong> ${flight.airline}<br>
+                                <strong>Flight Number:</strong> ${flight.flight_number}<br>
+                                <strong>Departure Time:</strong> ${flight.departure_time}<br>
+                                <strong>Departure Status:</strong> ${flight.departure_status}
+                            `);
+                        var latlngs = [
+                            [flight.departure_lat, flight.departure_lon],
+                            [flight.arrival_lat, flight.arrival_lon]
+                        ];
+                        var polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map);
+
+                        var currentTime = new Date();
+                        var departureTime = new Date(flight.departure_time);
+                        var elapsed = (currentTime - departureTime) / 1000; // Elapsed time in seconds
+                        var totalDuration = (new Date(flight.arrival_time) - departureTime) / 1000; // Total duration in seconds
+                        var position = elapsed / totalDuration; // Position along the route
+
+                        var planeIcon = L.icon({
+                            iconUrl: '{{ url_for("static", filename="plane.jpg") }}',
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 16],
+                            popupAnchor: [0, -16]
+                        });
+                        var planeMarker = L.marker(latlngs[0], { icon: planeIcon }).addTo(map);
+
+                        var path = polyline.getLatLngs();
+                        var index = Math.floor(position * path.length);
+                        var planeInterval = setInterval(() => {
+                            if (index === path.length) {
+                                clearInterval(planeInterval);
+                                return;
+                            }
+                            planeMarker.setLatLng(path[index]);
+                            index++;
+                        }, 1000); // Adjust the interval for smoother or faster movement
+                    });
                 });
-            });
-    </script>
-</body>
-</html>
+        </script>
+    </body>
+    </html>
