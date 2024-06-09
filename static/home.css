@@ -10,7 +10,7 @@ body {
 .main {
     width: 100%;
     height: 100vh;
-    background-image: url("/static/background1.jpg");
+    background-image: url("/static/Background2.jpg");
     background-size: cover;
     background-position: center;
 }
@@ -118,78 +118,45 @@ ul li a:hover {
 }
 
 .content {
-    width: 1200px;
-    height: auto;
-    margin: auto;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     color: #fff;
     position: relative;
-}
-
-.content .par {
-    padding-left: 20px;
-    padding-bottom: 25px;
-    font-family: Arial;
-    letter-spacing: 1.2px;
-    line-height: 30px;
 }
 
 .content h1 {
     font-family: 'Times New Roman';
     font-size: 50px;
-    padding-left: 20px;
-    margin-top: 9%;
     letter-spacing: 2px;
+    text-align: center;
 }
 
-.content .cn {
-    width: 160px;
-    height: 40px;
-    background: #ff7200;
-    border: none;
-    margin-bottom: 10px;
-    margin-left: 20px;
-    font-size: 18px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: .4s ease;
-}
-
-.content .cn a {
-    text-decoration: none;
-    color: #000;
-    transition: .3s ease;
-}
-
-.cn:hover {
-    background-color: #fff;
-}
-
-.content span {
+.content .orange {
     color: #ff7200;
-    font-size: 65px;
 }
 
 .form {
     width: 250px;
     height: 380px;
     background: linear-gradient(to top, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0.8) 50%);
-    position: absolute;
-    top: -20px;
-    left: 870px;
-    transform: translate(0%,-5%);
     border-radius: 10px;
     padding: 25px;
+    margin-top: 20px;
+    text-align: center;
 }
 
 .form h2 {
-    width: 220px;
     font-family: sans-serif;
     text-align: center;
     color: #ff7200;
     font-size: 22px;
     background-color: #fff;
     border-radius: 10px;
-    margin: 2px;
+    margin: 0 auto 15px auto;
     padding: 8px;
 }
 
@@ -204,7 +171,7 @@ ul li a:hover {
     color: #fff;
     font-size: 15px;
     letter-spacing: 1px;
-    margin-top: 30px;
+    margin-top: 10px;
     font-family: sans-serif;
 }
 
@@ -222,7 +189,7 @@ ul li a:hover {
     height: 40px;
     background: #ff7200;
     border: none;
-    margin-top: 30px;
+    margin-top: 20px;
     font-size: 18px;
     border-radius: 10px;
     cursor: pointer;
@@ -235,7 +202,8 @@ ul li a:hover {
     color: #ff7200;
 }
 
-.form .link {
+.form .link
+{
     font-family: Arial, Helvetica, sans-serif;
     font-size: 17px;
     padding-top: 20px;
@@ -245,12 +213,6 @@ ul li a:hover {
 .form .link a {
     text-decoration: none;
     color: #ff7200;
-}
-
-.liw {
-    padding-top: 15px;
-    padding-bottom: 10px;
-    text-align: center;
 }
 
 .icons a {
