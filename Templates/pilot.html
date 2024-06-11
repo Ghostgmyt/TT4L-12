@@ -6,29 +6,26 @@
     <title>Pilots</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-image: url("{{ url_for('static', filename='background2.jpg') }}");
-            background-size: cover;
-            background-position: center;
-            padding-top: 50px;
             margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             color: #333;
-            text-align: center;
-            margin-bottom: 30px;
         }
 
         .pilot-list {
@@ -90,19 +87,34 @@
         .role-button:hover {
             background-color: rgba(0, 56, 179, 0.8);
         }
+
+        .logout-button {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .logout-button a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .logout-button a:hover {
+            color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="logout-button">
+            <a href="/login">
+                <i class="fas fa-sign-out-alt"></i>
+                Log Out
+            </a>
+        </div>
         <h1>Welcome to the Pilots Page</h1>
         <div class="pilot-list">
-            <!-- Assuming you pass a list of pilots to the template -->
-            {% for pilot in pilots %}
-                <div class="pilot-item">
-                    <i class="fas fa-user-circle"></i>
-                    <span>{{ pilot.name }} - {{ pilot.rank }}</span>
-                </div>
-            {% endfor %}
         </div>
         <div class="text-center">
             <a href="/my_flights" class="btn btn-primary button">
@@ -115,3 +127,4 @@
     </div>
 </body>
 </html>
+
