@@ -372,28 +372,51 @@ def add_flight():
 
     return redirect(url_for('admin'))
 
-@app.route('/edit_flight/<int:flight_id>', methods=['POST'])
+@app.route('/edit_flight/<int:flight_id>', methods=['GET', 'POST'])
 def edit_flight(flight_id):
-    airline = request.form['airline']
-    flight_number = request.form['flight_number']
-    departure_time = request.form['departure_time']
-    departure_status = request.form['departure_status']
-    departure_lat = request.form['departure_lat']
-    departure_lon = request.form['departure_lon']
-    arrival_lat = request.form['arrival_lat']
-    arrival_lon = request.form['arrival_lon']
-
     conn = sqlite3.connect('my_database.db')
     cursor = conn.cursor()
-    cursor.execute('''
-        UPDATE Flights
-        SET airline = ?, flight_number = ?, departure_time = ?, departure_status = ?, departure_lat = ?, departure_lon = ?, arrival_lat = ?, arrival_lon = ?
-        WHERE id = ?
-    ''', (airline, flight_number, departure_time, departure_status, departure_lat, departure_lon, arrival_lat, arrival_lon, flight_id))
-    conn.commit()
-    conn.close()
 
-    return redirect(url_for('admin'))
+    if request.method == 'POST':
+        airline = request.form['airline']
+        flight_number = request.form['flight_number']
+        departure_time = request.form['departure_time']
+        departure_status = request.form['departure_status']
+        departure_lat = request.form['departure_lat']
+        departure_lon = request.form['departure_lon']
+        arrival_lat = request.form['arrival_lat']
+        arrival_lon = request.form['arrival_lon']
+
+        cursor.execute('''
+            UPDATE Flights
+            SET airline = ?, flight_number = ?, departure_time = ?, departure_status = ?, departure_lat = ?, departure_lon = ?, arrival_lat = ?, arrival_lon = ?
+            WHERE id = ?
+        ''', (airline, flight_number, departure_time, departure_status, departure_lat, departure_lon, arrival_lat, arrival_lon, flight_id))
+        conn.commit()
+        conn.close()
+        flash('Flight updated successfully', 'success')
+        return redirect(url_for('admin'))
+
+    else:
+        cursor.execute('SELECT * FROM Flights WHERE id = ?', (flight_id,))
+        flight = cursor.fetchone()
+        conn.close()
+        if flight:
+            flight_data = {
+                'id': flight[0],
+                'airline': flight[1],
+                'flight_number': flight[2],
+                'departure_time': flight[3],
+                'departure_status': flight[4],
+                'departure_lat': flight[5],
+                'departure_lon': flight[6],
+                'arrival_lat': flight[7],
+                'arrival_lon': flight[8]
+            }
+            return render_template('edit_flight.html', flight=flight_data)
+        else:
+            flash('Flight not found', 'error')
+            return redirect(url_for('admin'))
 
 @app.route('/delete_flight/<int:flight_id>', methods=['POST'])
 def delete_flight(flight_id):
