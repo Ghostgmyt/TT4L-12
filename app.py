@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, flash, url_for, jso
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import SocketIO
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 app.secret_key = '1997019970'
@@ -20,6 +20,14 @@ def get_flights_for_user(user_id):
     conn.close()
     return flights
 
+def get_all_flights():
+    conn = sqlite3.connect('my_database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM Flights')
+    flights = cursor.fetchall()
+    conn.close()
+    return flights
+
 @app.route('/get_flights')
 def get_flights():
     conn = sqlite3.connect('my_database.db')
@@ -31,6 +39,7 @@ def get_flights():
     flights_list = []
     for flight in flights:
         flight_dict = {
+            'id': flight[0],
             'airline': flight[1],
             'flight_number': flight[2],
             'departure_time': flight[3],
@@ -56,9 +65,28 @@ def create_tables():
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     role TEXT NOT NULL,
                     message TEXT NOT NULL,
+                    flight_number TEXT NOT NULL,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     accepted BOOLEAN DEFAULT 0
                  )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS Users (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    user_type TEXT NOT NULL
+                )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS Flights (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    airline TEXT NOT NULL,
+                    flight_number TEXT NOT NULL,
+                    departure_time TEXT NOT NULL,
+                    departure_status TEXT NOT NULL,
+                    departure_lat REAL NOT NULL,
+                    departure_lon REAL NOT NULL,
+                    arrival_lat REAL NOT NULL,
+                    arrival_lon REAL NOT NULL,
+                    pilot_id TEXT
+                )''')
     conn.commit()
     conn.close()
 
@@ -94,27 +122,19 @@ def chat_home():
 
 @app.route('/chat/<role>')
 def chat(role):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("SELECT * FROM messages ORDER BY timestamp")
-    rows = c.fetchall()
-    messages = []
-    for row in rows:
-        messages.append({
-            'id': row[0],
-            'role': row[1],
-            'message': row[2],
-            'timestamp': row[3],
-            'accepted': row[4]
-        })
-    conn.close()
-    return render_template('chat.html', role=role, messages=messages, instruction_map=instruction_map)
+    user_id = session.get('user_id')
+    flights = get_all_flights() if role == 'admin' else get_flights_for_user(user_id) if role == 'Pilot' else get_all_flights()
+    return render_template('chat.html', role=role, instruction_map=instruction_map, flights=flights)
 
 @app.route('/fetch_messages')
 def fetch_messages():
+    flight_number = request.args.get('flight_number')
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT * FROM messages ORDER BY timestamp")
+    if flight_number:
+        c.execute("SELECT * FROM messages WHERE flight_number = ? ORDER BY timestamp", (flight_number,))
+    else:
+        c.execute("SELECT * FROM messages ORDER BY timestamp")
     rows = c.fetchall()
     messages = []
     for row in rows:
@@ -122,8 +142,8 @@ def fetch_messages():
             'id': row[0],
             'role': row[1],
             'message': row[2],
-            'timestamp': row[3],
-            'accepted': row[4]
+            'timestamp': row[4],
+            'accepted': row[5]
         })
     conn.close()
     return jsonify(messages)
@@ -131,27 +151,21 @@ def fetch_messages():
 @socketio.on('send_message')
 def send_message(data):
     role = data['role']
-    if role == 'Pilot':
-        instruction = data['instruction']
-        message = instruction
-    else:
-        message = data['message']
-        for category, instructions in instruction_map.items():
-            if message in instructions:
-                message = instructions[message]
-                break
+    flight_number = data['flight_number']
+    message = data['message']
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("INSERT INTO messages (role, message) VALUES (?, ?)", (role, message))
+    c.execute("INSERT INTO messages (role, message, flight_number) VALUES (?, ?, ?)", (role, message, flight_number))
     conn.commit()
     conn.close()
     socketio.emit('new_message', {
         'role': role,
         'message': message,
-        'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+        'flight_number': flight_number,
+        'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
         'id': None,
         'accepted': False
-    }, broadcast=True)
+    }, namespace='/')
 
 @socketio.on('accept_message')
 def accept_message(message_id):
@@ -163,18 +177,20 @@ def accept_message(message_id):
     row = c.fetchone()
     if row:
         message = row[2]
+        flight_number = row[3]
         for category, instructions in instruction_map.items():
             if message in instructions:
                 response_message = instructions[message]
-                c.execute("INSERT INTO messages (role, message) VALUES (?, ?)", ('ATC', response_message))
+                c.execute("INSERT INTO messages (role, message, flight_number) VALUES (?, ?, ?)", ('ATC', response_message, flight_number))
                 conn.commit()
                 socketio.emit('new_message', {
                     'role': 'ATC',
                     'message': response_message,
-                    'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                    'flight_number': flight_number,
+                    'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
                     'id': None,
                     'accepted': False
-                }, broadcast=True)
+                }, namespace='/')
                 break
     conn.close()
 
@@ -185,6 +201,7 @@ def init_db():
     cursor.execute('DROP TABLE IF EXISTS Users')
     cursor.execute('DROP TABLE IF EXISTS Flights')
     cursor.execute('DROP TABLE IF EXISTS PilotFlightAssignment')
+    cursor.execute('DROP TABLE IF EXISTS messages')
 
     cursor.execute('''
         CREATE TABLE Users (
@@ -206,7 +223,18 @@ def init_db():
             departure_lon REAL NOT NULL,
             arrival_lat REAL NOT NULL,
             arrival_lon REAL NOT NULL,
-            pilot_id TEXT  -- This line adds the new column
+            pilot_id TEXT
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            role TEXT NOT NULL,
+            message TEXT NOT NULL,
+            flight_number TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            accepted BOOLEAN DEFAULT 0
         )
     ''')
 
@@ -223,10 +251,10 @@ def init_db():
     cursor.execute('INSERT INTO Users (id, name, password_hash, user_type) VALUES (?, ?, ?, ?)',
                    ('C002', 'ATCUser2', generate_password_hash('atcpass2'), 'atcontrol'))
 
-    cursor.execute('INSERT INTO Flights (airline, flight_number, departure_time, departure_status, departure_lat, departure_lon, arrival_lat, arrival_lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                   ('Air Maldives', 'MV001', '2024-06-01 10:00', 'On Time', 4.1755, 73.5093, 40.7128, -74.0060))
-    cursor.execute('INSERT INTO Flights (airline, flight_number, departure_time, departure_status, departure_lat, departure_lon, arrival_lat, arrival_lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                   ('Air Maldives', 'MV002', '2024-06-01 12:00', 'Delayed', 4.1755, 73.5093, 51.5074, -0.1278))
+    cursor.execute('INSERT INTO Flights (airline, flight_number, departure_time, departure_status, departure_lat, departure_lon, arrival_lat, arrival_lon, pilot_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                   ('Air Maldives', 'MV001', '2024-06-01 10:00', 'On Time', 4.1755, 73.5093, 40.7128, -74.0060, 'P001'))
+    cursor.execute('INSERT INTO Flights (airline, flight_number, departure_time, departure_status, departure_lat, departure_lon, arrival_lat, arrival_lon, pilot_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                   ('Air Maldives', 'MV002', '2024-06-01 12:00', 'Delayed', 4.1755, 73.5093, 51.5074, -0.1278, 'P002'))
 
     conn.commit()
     conn.close()
@@ -295,11 +323,11 @@ def login():
         if user and check_password_hash(user[2], password):
             flash('Login successful!', 'success')
             user_type = user[3]
+            session['user_id'] = id  
             if user_type == 'admin':
                 return redirect(url_for('admin_home'))
             elif user_type == 'pilot':
-                session['user_id'] = id  
-                return redirect(url_for('pilot'))  
+                return redirect(url_for('chat', role='Pilot'))  
             elif user_type == 'atcontrol':
                 return redirect(url_for('chat', role='ATC'))
         else:
@@ -436,12 +464,10 @@ def pilot():
 def my_flights():
     user_id = session.get('user_id')
     if user_id:
-        # Fetch flights for the logged-in user from the database
         flights = get_flights_for_user(user_id)
         return render_template('my_flights.html', flights=flights)
     else:
         return redirect(url_for('login'))
-
 
 @app.route('/assign', methods=['GET', 'POST'])
 def assign():
@@ -449,12 +475,15 @@ def assign():
     cursor = conn.cursor()
 
     if request.method == 'POST':
-        pilot_id = request.form['pilot_id']
-        flight_id = request.form['flight_id']
+        flight_id = request.form.get('assign')
+        pilot_id = request.form.get(f'pilot_id_{flight_id}')
 
-        cursor.execute("UPDATE Flights SET pilot_id = ? WHERE id = ?", (pilot_id, flight_id))
-        conn.commit()
-        flash('Pilot assigned to flight successfully', 'success')
+        if flight_id and pilot_id:
+            cursor.execute("UPDATE Flights SET pilot_id = ? WHERE id = ?", (pilot_id, flight_id))
+            conn.commit()
+            flash('Pilot assigned to flight successfully', 'success')
+        else:
+            flash('Please select a pilot.', 'error')
 
     cursor.execute("SELECT * FROM Users WHERE user_type = 'pilot'")
     pilots = cursor.fetchall()
@@ -462,7 +491,6 @@ def assign():
     flights = cursor.fetchall()
     conn.close()
     return render_template('assign.html', pilots=pilots, flights=flights)
-
 
 @app.route('/contact')
 def contact():
@@ -484,7 +512,6 @@ def flights():
     flights = cursor.fetchall()
     conn.close()
     return render_template('flights.html', flights=flights)
-
 
 if __name__ == '__main__':
     init_db()
