@@ -63,16 +63,17 @@
                     {% for flight in flights %}
                         <tr>
                             <td>
-                                <select class="form-control" name="pilot_id">
+                                <select class="form-control" name="pilot_id_{{ flight[0] }}">
+                                    <option value="" disabled selected>Select a pilot</option>
                                     {% for pilot in pilots %}
                                         <option value="{{ pilot[0] }}">{{ pilot[1] }}</option>
                                     {% endfor %}
                                 </select>
                             </td>
+                            <td>{{ flight[1] }}</td>
                             <td>{{ flight[2] }}</td>
-                            <td>{{ flight[3] }}</td>
                             <td>
-                                <button type="submit" class="btn-assign" name="flight_id" value="{{ flight[0] }}">Assign</button>
+                                <button type="submit" class="btn btn-primary" name="assign" value="{{ flight[0] }}">Assign</button>
                             </td>
                         </tr>
                     {% endfor %}
