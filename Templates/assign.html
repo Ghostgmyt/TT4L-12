@@ -11,6 +11,9 @@
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             padding-top: 50px;
+            background-image: url("{{ url_for('static', filename='backgroundimageadmin.jpg') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
         }
 
         .container {
@@ -41,8 +44,13 @@
         }
 
         th {
-            background-color: #007bff;
+            background-color: #303439;
             color: white;
+        }
+
+        .back-button {
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -80,6 +88,10 @@
                 </tbody>
             </table>
         </form>
+        
+        <div class="back-button">
+            <a href="/admin_home" class="btn btn-secondary"><i class="fas fa-chevron-left"></i> Back to Admin Page</a>
+        </div>
     </div>
 </body>
 </html>
