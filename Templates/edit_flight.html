@@ -5,76 +5,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Flight</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
-            background-color: #f4f4f4;
+            background-color: #121212;
+            color: #ffffff;
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
         }
         .navbar {
-            background-color: #343a40;
+            background-color: #1f1f1f;
         }
         .navbar-brand, .nav-link {
             color: #ffffff !important;
+            transition: color 0.3s ease-in-out;
+        }
+        .navbar-brand:hover, .nav-link:hover {
+            color: #800000 !important;
         }
         .container {
             margin-top: 50px;
-            background-color: #ffffff;
+            background-color: #1f1f1f;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 1s ease-in-out;
+        }
+        .form-group label {
+            color: #b3b3b3;
+        }
+        .form-control {
+            background-color: #2b2b2b;
+            color: #ffffff;
+            border: 1px solid #444;
+        }
+        .form-control::placeholder {
+            color: #aaaaaa;
+        }
+        .btn-primary, .btn-secondary {
+            margin-top: 10px;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #444;
+            border-color: #444;
+        }
+        .btn-secondary:hover {
+            background-color: #555;
+            border-color: #555;
+        }
+        .btn-space {
+            margin-right: 10px;
+        }
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .form-container {
+            margin-top: 20px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
         }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Edit Flight</a>
+        <a class="navbar-brand" href="#"><i class="fas fa-plane"></i> Edit Flight</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/admin_home">Admin Panel</a>
+                    <a class="nav-link" href="/admin_home"><i class="fas fa-home"></i> Admin Panel</a>
                 </li>
             </ul>
         </div>
     </nav>
     <div class="container">
-        <h2>Edit Flight Details</h2>
-        <form method="post" action="/edit_flight/{{ flight.id }}">
-            <div class="form-group">
-                <label for="airline">Airline</label>
-                <input type="text" class="form-control" id="airline" name="airline" value="{{ flight.airline }}" required>
+        <div class="card">
+            <div class="card-header">
+                <h2>Edit Flight Details</h2>
             </div>
-            <div class="form-group">
-                <label for="flight_number">Flight Number</label>
-                <input type="text" class="form-control" id="flight_number" name="flight_number" value="{{ flight.flight_number }}" required>
+            <div class="card-body">
+                <form method="post" action="/edit_flight/{{ flight.id }}">
+                    <div class="form-group">
+                        <label for="airline">Airline</label>
+                        <input type="text" class="form-control" id="airline" name="airline" value="{{ flight.airline }}" placeholder="Enter airline name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="flight_number">Flight Number</label>
+                        <input type="text" class="form-control" id="flight_number" name="flight_number" value="{{ flight.flight_number }}" placeholder="Enter flight number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_time">Departure Time (YYYY-MM-DD HH:MM:SS)</label>
+                        <input type="datetime-local" class="form-control" id="departure_time" name="departure_time" value="{{ flight.departure_time }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_status">Departure Status</label>
+                        <input type="text" class="form-control" id="departure_status" name="departure_status" value="{{ flight.departure_status }}" placeholder="Enter departure status" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_lat">Departure Latitude</label>
+                        <input type="text" class="form-control" id="departure_lat" name="departure_lat" value="{{ flight.departure_lat }}" placeholder="Enter departure latitude" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_lon">Departure Longitude</label>
+                        <input type="text" class="form-control" id="departure_lon" name="departure_lon" value="{{ flight.departure_lon }}" placeholder="Enter departure longitude" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="arrival_lat">Arrival Latitude</label>
+                        <input type="text" class="form-control" id="arrival_lat" name="arrival_lat" value="{{ flight.arrival_lat }}" placeholder="Enter arrival latitude" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="arrival_lon">Arrival Longitude</label>
+                        <input type="text" class="form-control" id="arrival_lon" name="arrival_lon" value="{{ flight.arrival_lon }}" placeholder="Enter arrival longitude" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-space"><i class="fas fa-save"></i> Save Changes</button>
+                    <a href="/admin" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="departure_time">Departure Time (YYYY-MM-DD HH:MM:SS)</label>
-                <input type="datetime-local" class="form-control" id="departure_time" name="departure_time" value="{{ flight.departure_time }}" required>
-            </div>
-            <div class="form-group">
-                <label for="departure_status">Departure Status</label>
-                <input type="text" class="form-control" id="departure_status" name="departure_status" value="{{ flight.departure_status }}" required>
-            </div>
-            <div class="form-group">
-                <label for="departure_lat">Departure Latitude</label>
-                <input type="text" class="form-control" id="departure_lat" name="departure_lat" value="{{ flight.departure_lat }}" required>
-            </div>
-            <div class="form-group">
-                <label for="departure_lon">Departure Longitude</label>
-                <input type="text" class="form-control" id="departure_lon" name="departure_lon" value="{{ flight.departure_lon }}" required>
-            </div>
-            <div class="form-group">
-                <label for="arrival_lat">Arrival Latitude</label>
-                <input type="text" class="form-control" id="arrival_lat" name="arrival_lat" value="{{ flight.arrival_lat }}" required>
-            </div>
-            <div class="form-group">
-                <label for="arrival_lon">Arrival Longitude</label>
-                <input type="text" class="form-control" id="arrival_lon" name="arrival_lon" value="{{ flight.arrival_lon }}" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-        </form>
+        </div>
     </div>
 </body>
 </html>

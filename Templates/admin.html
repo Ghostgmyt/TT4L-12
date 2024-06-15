@@ -5,44 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         body {
             background-image: url("{{ url_for('static', filename='background2.jpg') }}");
             background-size: cover;
             background-repeat: no-repeat;
             color: white;
+            font-family: 'Arial', sans-serif;
         }
         .navbar {
             background-color: #343a40;
         }
         .navbar-brand, .nav-link {
             color: #ffffff !important;
+            transition: color 0.3s ease-in-out;
+        }
+        .navbar-brand:hover, .nav-link:hover {
+            color: #007bff !important;
         }
         .container {
-            margin-top: 50px;
+            margin-top: 20px;
             background-color: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 10px;
+            animation: fadeInUp 1s ease-in-out;
         }
         .card {
             margin-bottom: 20px;
             background-color: rgba(255, 255, 255, 0.8);
+            animation: fadeInUp 1s ease-in-out;
         }
         .card-header {
             background-color: #007bff;
             color: white;
         }
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
+        .btn-primary, .btn-warning, .btn-danger {
+            transition: background-color 0.3s ease-in-out;
         }
-        .table {
-            background-color: #ffffff;
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .btn-warning:hover {
+            background-color: #e6a00f;
+            border-color: #e6a00f;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #c82333;
         }
         .time-display {
             text-align: center;
-            font-size: 1.5em;
+            font-size: 3.5em;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .time-display span {
+            display: inline-block;
+            margin: 0 2px;
+            animation: blink 1s infinite;
+        }
+        .time-display span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .time-display span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        .time-display span:nth-child(4) {
+            animation-delay: 0.6s;
+        }
+        .time-display span:nth-child(5) {
+            animation-delay: 0.8s;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .modal-content {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 10px;
+            border: none;
+            padding: 20px;
+        }
+        .modal-header {
+            border-bottom: none;
+        }
+        .modal-footer {
+            border-top: none;
+        }
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid #444;
+        }
+        .form-control::placeholder {
+            color: #aaa;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            margin-top: 20px;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .btn-space {
+            margin-bottom: 20px;
+        }
+        .btn-space button {
+            margin-right: 10px;
+        }
+        .actions button {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -52,7 +136,7 @@
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/admin_home">Back</a>
+                    <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/flights">Flight Map</a>
@@ -62,7 +146,7 @@
     </nav>
     <div class="container">
         <div class="time-display" id="time-display">
-            Current Time: <span id="current-time">{{ current_time }}</span>
+            Current Time: <span id="hour">00</span>:<span id="minute">00</span>:<span id="second">00</span>
         </div>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -71,50 +155,64 @@
                 </div>
             {% endif %}
         {% endwith %}
-        <div class="card">
-            <div class="card-header">Add Flight</div>
-            <div class="card-body">
-                <form method="post" onsubmit="return validateFlightTime()">
-                    <div class="form-group">
-                        <label for="airline">Airline</label>
-                        <input type="text" class="form-control" id="airline" name="airline" required>
+        <div class="btn-space">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFlightModal">
+                Add Flight
+            </button>
+        </div>
+        <div class="modal fade" id="addFlightModal" tabindex="-1" aria-labelledby="addFlightModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addFlightModalLabel">Add Flight</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label for="flight_number">Flight Number</label>
-                        <input type="text" class="form-control" id="flight_number" name="flight_number" required>
+                    <div class="modal-body">
+                        <form method="post" onsubmit="return validateFlightTime()">
+                            <div class="form-group">
+                                <label for="airline">Airline</label>
+                                <input type="text" class="form-control" id="airline" name="airline" placeholder="Enter airline name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="flight_number">Flight Number</label>
+                                <input type="text" class="form-control" id="flight_number" name="flight_number" placeholder="Enter flight number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="departure_time">Departure Time (YYYY-MM-DD HH:MM:SS)</label>
+                                <input type="datetime-local" class="form-control" id="departure_time" name="departure_time" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="departure_status">Departure Status</label>
+                                <input type="text" class="form-control" id="departure_status" name="departure_status" placeholder="Enter departure status" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="departure_lat">Departure Latitude</label>
+                                <input type="text" class="form-control" id="departure_lat" name="departure_lat" placeholder="Enter departure latitude" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="departure_lon">Departure Longitude</label>
+                                <input type="text" class="form-control" id="departure_lon" name="departure_lon" placeholder="Enter departure longitude" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="arrival_lat">Arrival Latitude</label>
+                                <input type="text" class="form-control" id="arrival_lat" name="arrival_lat" placeholder="Enter arrival latitude" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="arrival_lon">Arrival Longitude</label>
+                                <input type="text" class="form-control" id="arrival_lon" name="arrival_lon" placeholder="Enter arrival longitude" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" name="add">Add Flight</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="departure_time">Departure Time (YYYY-MM-DD HH:MM:SS)</label>
-                        <input type="datetime-local" class="form-control" id="departure_time" name="departure_time" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="departure_status">Departure Status</label>
-                        <input type="text" class="form-control" id="departure_status" name="departure_status" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="departure_lat">Departure Latitude</label>
-                        <input type="text" class="form-control" id="departure_lat" name="departure_lat" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="departure_lon">Departure Longitude</label>
-                        <input type="text" class="form-control" id="departure_lon" name="departure_lon" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="arrival_lat">Arrival Latitude</label>
-                        <input type="text" class="form-control" id="arrival_lat" name="arrival_lat" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="arrival_lon">Arrival Longitude</label>
-                        <input type="text" class="form-control" id="arrival_lon" name="arrival_lon" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" name="add">Add Flight</button>
-                </form>
+                </div>
             </div>
         </div>
         <div class="card">
             <div class="card-header">Manage Flights</div>
             <div class="card-body">
-                <table class="table table-striped">
+                <table class="table table-striped animate__animated animate__fadeInUp">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -141,7 +239,7 @@
                             <td>{{ row[6] }}</td>
                             <td>{{ row[7] }}</td>
                             <td>{{ row[8] }}</td>
-                            <td>
+                            <td class="actions">
                                 {% if row[3] > current_time %}
                                 <form method="post" style="display:inline;">
                                     <input type="hidden" name="remove" value="{{ row[0] }}">
@@ -161,21 +259,23 @@
             </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         function updateTime() {
-            const currentTimeElement = document.getElementById('current-time');
-            let currentTime = new Date(currentTimeElement.textContent);
-
             setInterval(() => {
-                currentTime.setSeconds(currentTime.getSeconds() + 60);
-                currentTimeElement.textContent = currentTime.toISOString().slice(0, 19).replace('T', ' ');
-            }, 1000 / 60);
+                const now = new Date();
+                document.getElementById('hour').textContent = String(now.getHours()).padStart(2, '0');
+                document.getElementById('minute').textContent = String(now.getMinutes()).padStart(2, '0');
+                document.getElementById('second').textContent = String(now.getSeconds()).padStart(2, '0');
+            }, 1000);
         }
 
         function validateFlightTime() {
             const departureTimeInput = document.getElementById('departure_time');
             const departureTime = new Date(departureTimeInput.value);
-            const currentTime = new Date(document.getElementById('current-time').textContent);
+            const currentTime = new Date();
 
             if (departureTime < currentTime) {
                 alert('Departure time cannot be in the past.');
@@ -184,7 +284,25 @@
             return true;
         }
 
-        window.onload = updateTime;
+        function checkPastFlights() {
+            const currentTime = new Date();
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const departureTime = new Date(row.children[3].textContent);
+                const actions = row.querySelector('.actions');
+                if (departureTime < currentTime) {
+                    actions.innerHTML = '<button class="btn btn-secondary btn-sm" disabled>Past Flight</button>';
+                }
+            });
+        }
+
+        window.onload = function() {
+            updateTime();
+            setInterval(checkPastFlights, 1000);
+            if (window.history.replaceState) {
+                window.history.replaceState(null, null, window.location.href);
+            }
+        };
     </script>
 </body>
 </html>
