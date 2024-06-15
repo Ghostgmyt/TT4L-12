@@ -3,31 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Flight</title>
+    <title>Admin Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-image: url("{{ url_for('static', filename='backgroundimageadmin.jpg') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            opacity: 1;        
         }
 
         .container {
-            max-width: 1000px;
-            margin: 50px auto;
-            padding: 30px;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
             background-color: #fff;
-            border-radius: 5px;
+            border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Center align content horizontally */
         }
 
         h1 {
             color: #333;
-        }
-
-        p {
-            color: #666;
+            margin-bottom: 20px;
         }
 
         .links {
@@ -39,10 +41,10 @@
         .link-item {
             flex-grow: 1;
             text-align: center;
-            padding: 10px;
-            background-color: #007bff;
+            padding: 15px;
+            background-color: #23272b;
             border-radius: 5px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.3s ease;
             margin-right: 10px;
         }
 
@@ -51,16 +53,22 @@
         }
 
         .link-item:hover {
-            background-color: #0056b3;
+            background-color: #aeb9c4;
+            transform: translateY(-5px);
         }
 
         .link-item a {
             color: #fff;
             text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .icon {
-            margin-bottom: 5px;
+            font-size: 24px;
+            margin-bottom: 8px;
         }
 
         .logout-button {
@@ -69,14 +77,18 @@
         }
 
         .logout-button a {
-            color: #007bff;
+            color: #ed1d1d;
             text-decoration: none;
             font-size: 16px;
             transition: color 0.3s ease;
         }
 
         .logout-button a:hover {
-            color: #0056b3;
+            color: #b6c2d0;
+        }
+
+        .logout-button i {
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -88,7 +100,7 @@
                 Log Out
             </a>
         </div>
-        <h1>Welcome to Admin Page</h1>
+        <h1>Admin Page</h1>
         <div class="links">
             <div class="link-item">
                 <a href="/admin">
@@ -118,4 +130,4 @@
     </div>
 </body>
 </html>
-    
+
