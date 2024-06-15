@@ -15,7 +15,8 @@ DB_FILE = 'my_database.db'
 def get_flights_for_user(user_id):
     conn = sqlite3.connect('my_database.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM Flights WHERE pilot_id = ?', (user_id,))
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute('SELECT * FROM Flights WHERE pilot_id = ? AND departure_time > ?', (user_id, current_time))
     flights = cursor.fetchall()
     conn.close()
     return flights
@@ -23,7 +24,8 @@ def get_flights_for_user(user_id):
 def get_all_flights():
     conn = sqlite3.connect('my_database.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM Flights')
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute('SELECT * FROM Flights WHERE departure_time > ?', (current_time,))
     flights = cursor.fetchall()
     conn.close()
     return flights
@@ -32,7 +34,7 @@ def get_all_flights():
 def get_flights():
     conn = sqlite3.connect('my_database.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM Flights')
+    cursor.execute('SELECT * FROM Flights WHERE departure_time > ?', (datetime.now().strftime('%Y-%m-%d %H:%M:%S'),))
     flights = cursor.fetchall()
     conn.close()
 
@@ -327,7 +329,7 @@ def login():
             if user_type == 'admin':
                 return redirect(url_for('admin_home'))
             elif user_type == 'pilot':
-                return redirect(url_for('chat', role='Pilot'))  
+                return redirect(url_for('pilot'))  
             elif user_type == 'atcontrol':
                 return redirect(url_for('chat', role='ATC'))
         else:
